@@ -27,9 +27,12 @@ def getActors(X,Y=None):
         return FileName
 
 def rgb2gray(rgb):
-    r,g,b = rgb[:,:,0],rgb[:,:,1],rgb[:,:,2]
-    gray = 0.2989*r+0.5870*g+0.1140*b
-    return gray
+    try:
+        r,g,b = rgb[:,:,0],rgb[:,:,1],rgb[:,:,2]
+        gray = 0.2989*r+0.5870*g+0.1140*b
+        return gray
+    except IndexError:
+        print("Image is already grayscale")
 
 
 def getRawData():
@@ -57,18 +60,11 @@ def getRawData():
                         print("Unable to reach URL")
                     except urllib.error.ContentTooShortError:
                         print("Content too short")
-'''
-actors = "facescrub_actors.txt"
-list = getActors(actors)
-for a in list:
-    for line in open(getActors(actors,1)):
-        if a in line:
-            print("Testing URL: " + line.split()[4] + "y1: " + line.split()[5].split(",")[0])
-'''
 
 def getCroppedData():
     actors = "facescrub_actors.txt"
-    list = getActors(actors)
+    list = ['Alec Baldwin', 'Steve Carell']
+    #list = getActors(actors)
     if not os.path.exists(os.path.join(os.getcwd(),"cropped/")):
         os.makedirs(os.path.join(os.getcwd(),"cropped/"))
     for a in list:
@@ -94,12 +90,15 @@ def getCroppedData():
                             img = img[y1:y2,x1:x2]
                             img = img/255.0
                             img = rgb2gray(img)
+
                             img = imresize(img,[32,32],'nearest')
                             print("Attempting to save file to disk")
                             imsave(os.path.join(os.path.join(os.getcwd(),"cropped"),filename),img)
                             i+=1
                         except IOError:
                             print("Unable to read image")
+                        except ValueError:
+                            print("Array corrupted")
                     except urllib.error.HTTPError:
                         print("Unable to get content")
                     except urllib.error.URLError:
@@ -107,10 +106,18 @@ def getCroppedData():
                     except urllib.error.ContentTooShortError:
                         print("Content too short")
 
+def flattenData(x):
+    x = np.array(x)
+    x = x.flatten()
+    return x
+
 #getCroppedData()
+loc = os.path.join(os.getcwd(),"cropped/baldwin0.jpg")
+img = imread(loc)
+img = flattenData(img)
+print(img)
 
-
-
+'''
 #Test program to crop
 url = "http://images2.fanpop.com/image/photos/12400000/Gerry-gerard-butler-12419263-1617-2000.jpg"
 img = imread(urllib.request.urlopen(url))
@@ -123,7 +130,7 @@ plt.show()
 #img = imresize(img,[32,32],'nearest')
 #plt.imshow(img)
 #plt.show()
-
+'''
 
 
 
