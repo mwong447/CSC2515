@@ -11,7 +11,8 @@ import matplotlib.image as mpimg
 import os
 from scipy.ndimage import filters
 import urllib
-import socket
+import math
+
 
 
 
@@ -111,44 +112,86 @@ def flattenData(x):
     x = x.flatten()
     return x
 
-#getCroppedData()
-loc = os.path.join(os.getcwd(),"cropped/baldwin0.jpg")
-img = imread(loc)
-img = flattenData(img)
-print(img)
+def f(x,y,theta):
+    x = np.vstack((np.ones((1,np.shape(x)[1])),x))
+    return np.sum((y-np.where(np.dot(theta.T,x)>0.5,1,0)**2))
+    
 
-'''
-#Test program to crop
-url = "http://images2.fanpop.com/image/photos/12400000/Gerry-gerard-butler-12419263-1617-2000.jpg"
-img = imread(urllib.request.urlopen(url))
-img = img[420:1479,397:1456]
-img = img/255.0
-plt.imshow(img)
-plt.show()
-#print(img.shape)
-#img = rgb2gray(img)
-#img = imresize(img,[32,32],'nearest')
-#plt.imshow(img)
-#plt.show()
-'''
+def df(x,y,theta):
+    x = np.vstack((np.ones((1,np.shape(x)[1])),x))
+    return -2*(np.sum((y-np.where(np.dot(theta.T,x)*x > 0.5,1,0)),1))
+    
+def grad_descent(f,df,x,y,init_t,alpha):
+    EPS = 1e-5
+    prev_t = init_t-10*EPS
+    t = init_t.copy()
+    max_iter = 30000
+    iter = 0
+    while np.linalg.norm(t-prev_t) > EPS and iter < max_iter:
+        prev_t=t.copy()
+        t-=alpha*df(x,y,t)
+        if iter % 500 == 0:
+            print("Iteration: " + str(iter))
+            print("Cost: "+str(f(x,y,t)))
+            print("Gradient: " + str(df(x,y,t)))
+        iter += 1
+    return t
 
+def label(x):
+    label = flattenData(x)
+    return np.sum(label)
 
+def getDataMatrix():
+    directory = os.path.join(os.getcwd(),"cropped")
+    x = []
+    for file in os.listdir(directory):
+        img = imread(os.path.join(directory,str(file)))
+        img = np.array(img)/255.0
+        img = img.flatten()
+        x.append(img)
+    return np.transpose(x)
 
-
-
-
-
-
-
-'''
-for a in list:
-    name = a.split()[1].lower()
-    i = 0
-    for line in open(getActors(actors,1)):
-        filename = name + str(i)+'.'+line.split()[4].split('.')[-1]
-        timeout(urllib.request.urlopen,(line.split()[4],"uncropped/"+filename),{},30)
-        if not os.path.isfile("uncropped/"+filename):
-            continue
-        print(filename)
+def getDataLabels(act):
+    i=0
+    directory = os.path.join(os.getcwd(),"cropped")
+    y = []
+    for a in act:
+        name = a.split()[1].lower()
+        for file in os.listdir(directory):
+            filename = str(file)
+            if name in filename:
+                y.append(i)
         i+=1
+    return np.transpose(y)
+
+def sigm(x):
+    if x > 0.5:
+        return 1
+    else:
+        return 0
+
+
+#getCroppedData()
+x = getDataMatrix()
+act =['Alec Baldwin', 'Steve Carell']
+y = getDataLabels(act)
+print(x)
+print(y)
+theta0 = np.random.normal(0,0.2,1025)
+
+theta = grad_descent(f,df,x,y,theta0,0.000001)
+
+#theta0 = np.ones((1025,))
+#theta = grad_descent(f,df,x,y,theta0,0.00001)
+
+'''
+directory = os.path.join(os.getcwd(),"cropped")
+img = imread(os.path.join(directory,"baldwin0.jpg"))/255.0
+print(img.shape)
+img = img.reshape((img.flatten().shape[0],1))
+print(img.shape)
+theta = np.ones((1025,))
+x = np.vstack((np.ones((1,np.shape(img)[1])),img))
+y = 1
+test = np.sum((y - sigm(np.sum(np.dot(theta.T,x))))**2)
 '''
