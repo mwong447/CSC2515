@@ -5,6 +5,7 @@ import matplotlib.cbook as cbook
 import random
 import time
 from scipy.misc import imread
+from scipy.misc import imshow
 from scipy.misc import imresize
 from scipy.misc import imsave
 import matplotlib.image as mpimg
@@ -12,9 +13,6 @@ import os
 from scipy.ndimage import filters
 import urllib
 import math
-
-
-
 
 def getActors(X,Y=None):
     CurrentDirectory = os.getcwd()
@@ -114,18 +112,18 @@ def flattenData(x):
 
 def f(x,y,theta):
     x = np.vstack((np.ones((1,np.shape(x)[1])),x))
-    return np.sum((y-np.where(np.dot(theta.T,x)>0.5,1,0)**2))
+    return np.sum(np.power((y-np.dot(theta.T,x)),2))
     
 
-def df(x,y,theta):
-    x = np.vstack((np.ones((1,np.shape(x)[1])),x))
-    return -2*(np.sum((y-np.where(np.dot(theta.T,x)*x > 0.5,1,0)),1))
+def df(x, y, theta):
+    x = np.vstack((np.ones((1, x.shape[1])),x))
+    return -2*np.sum((y-np.dot(theta.T,x))*x, 1)
     
 def grad_descent(f,df,x,y,init_t,alpha):
     EPS = 1e-5
     prev_t = init_t-10*EPS
     t = init_t.copy()
-    max_iter = 30000
+    max_iter = 10000
     iter = 0
     while np.linalg.norm(t-prev_t) > EPS and iter < max_iter:
         prev_t=t.copy()
@@ -149,10 +147,11 @@ def getDataMatrix():
         img = np.array(img)/255.0
         img = img.flatten()
         x.append(img)
-    return np.transpose(x)
+    x = np.array(x)
+    return x
 
 def getDataLabels(act):
-    i=0
+    i=0.0
     directory = os.path.join(os.getcwd(),"cropped")
     y = []
     for a in act:
@@ -161,28 +160,87 @@ def getDataLabels(act):
             filename = str(file)
             if name in filename:
                 y.append(i)
-        i+=1
+        i+=1.0
     return np.transpose(y)
 
-def sigm(x):
-    if x > 0.5:
-        return 1
-    else:
-        return 0
 
 
 #getCroppedData()
 x = getDataMatrix()
 act =['Alec Baldwin', 'Steve Carell']
 y = getDataLabels(act)
-print(x)
-print(y)
+
 theta0 = np.random.normal(0,0.2,1025)
+#concatenate the data matrix and labels for processing
+print(x.shape)
+print(y.shape)
+complete = np.column_stack((x,y))
 
-theta = grad_descent(f,df,x,y,theta0,0.000001)
+np.random.shuffle(complete)
+training = complete[0:200,:]
+validation = complete[200:220,:]
+test = complete[220:240:]
+print("Number of Baldwin in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
+print("Number of Baldwin in validation set: " + str((np.shape(np.where(validation[:,-1]==0))[1])))
+print("Number of Baldwin in test set: " + str((np.shape(np.where(test[:,-1]==0))[1])))
+print("Number of Carell in training set: " + str((np.shape(np.where(training[:,-1]==1))[1])))
+print("Number of Carell in validation set: " + str((np.shape(np.where(validation[:,-1]==1))[1])))
+print("Number of Carell in test set: " + str((np.shape(np.where(test[:,-1]==1))[1])))
+theta0 = np.random.normal(0.1,0.05,1025)
+'''
+training = training[:,:-1]
+print(training.shape)
+print(np.transpose(training).shape)
+ones = np.ones((1,np.shape(training)[0]))
+print(ones.shape)
+sos = np.vstack((ones,np.transpose(training)))
+print(sos.shape)
+'''
+theta = grad_descent(f,df,np.transpose(training[:,:-1]),training[:,-1],theta0,0.00001)
 
-#theta0 = np.ones((1025,))
-#theta = grad_descent(f,df,x,y,theta0,0.00001)
+#Generating a hypothesis on training set:
+hypothesis = np.matmul(theta.T, np.vstack((np.ones((1,np.shape(training[:,:-1])[0])),np.transpose(training[:,:-1]))))
+#Report on accuracy
+i = 0
+while i < hypothesis.shape[0]:
+    if hypothesis[i] > 0.5:
+        hypothesis[i] = 1
+    else:
+        hypothesis[i] = 0
+    i+=1
+
+trainingLabels = training[:,-1]
+print("Training accuracy is: " + str(sum(np.equal(hypothesis,trainingLabels))/200.0))
+
+validation_hypothesis=np.matmul(theta.T, np.vstack((np.ones((1,np.shape(validation[:,:-1])[0])),np.transpose(validation[:,:-1]))))
+i=0
+while i < validation_hypothesis.shape[0]:
+    if validation_hypothesis[i] > 0.5:
+        validation_hypothesis[i] = 1
+    else:
+        validation_hypothesis[i] = 0
+    i+=1
+
+validationLabels = test[:,-1]
+print("Validation accuracy is: " + str(sum(np.equal(validation_hypothesis,validationLabels))/40.0))
+
+
+test_hypothesis = np.matmul(theta.T, np.vstack((np.ones((1,np.shape(test[:,:-1])[0])),np.transpose(test[:,:-1]))))
+i=0
+while i < test_hypothesis.shape[0]:
+    if test_hypothesis[i] > 0.5:
+        test_hypothesis[i] = 1
+    else:
+        test_hypothesis[i] = 0
+    i+=1
+
+testingLabels = test[:,-1]
+print("Testing accuracy is: " + str(sum(np.equal(test_hypothesis,testingLabels))/40.0))
+theta = theta[1:]
+theta = np.reshape(theta,(32,32))
+plt.imshow(theta)
+plt.show()
+
 
 '''
 directory = os.path.join(os.getcwd(),"cropped")
