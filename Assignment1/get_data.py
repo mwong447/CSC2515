@@ -60,19 +60,16 @@ def getRawData():
                     except urllib.error.ContentTooShortError:
                         print("Content too short")
 
-def getCroppedData():
-    actors = "facescrub_actors.txt"
-    list = ['Alec Baldwin', 'Steve Carell']
-    #list = getActors(actors)
+def getCroppedData(list,file):
     if not os.path.exists(os.path.join(os.getcwd(),"cropped/")):
         os.makedirs(os.path.join(os.getcwd(),"cropped/"))
     for a in list:
         name = a.split()[1].lower()
         i=0
-        for line in open(getActors(actors,1)):
+        for line in open(getActors(file,1)):
             if a in line:
                 filename = name+str(i)+'.'+line.split()[4].split('.')[-1]
-                if filename.endswith(".jpg"):
+                if filename.endswith(".jpg") and i != 130:
                     try:
                         if os.path.isfile(os.path.join(os.path.join(os.getcwd(),"cropped"),filename)):
                             continue
@@ -111,12 +108,14 @@ def flattenData(x):
     return x
 
 def f(x,y,theta):
-    x = np.vstack((np.ones((1,np.shape(x)[1])),x))
+    ones = np.ones((1,x.shape[1]))
+    x = np.vstack((ones,x))
     return np.sum(np.power((y-np.dot(theta.T,x)),2))
     
 
 def df(x, y, theta):
-    x = np.vstack((np.ones((1, x.shape[1])),x))
+    ones = np.ones((1,x.shape[1]))
+    x = np.vstack((ones,x))
     return -2*np.sum((y-np.dot(theta.T,x))*x, 1)
     
 def grad_descent(f,df,x,y,init_t,alpha):
@@ -165,17 +164,88 @@ def getDataLabels(act):
 
 
 
-#getCroppedData()
+#Declare list of actors for processing
+act = ['Alec Baldwin', 'Steve Carell']
+#getCroppedData(act,"facescrub_actors.txt")
 x = getDataMatrix()
-act =['Alec Baldwin', 'Steve Carell']
+print(x.shape)
 y = getDataLabels(act)
+print(y.shape)
 
-theta0 = np.random.normal(0,0.2,1025)
+
 #concatenate the data matrix and labels for processing
 print(x.shape)
 print(y.shape)
 complete = np.column_stack((x,y))
+print(complete.shape)
+np.random.seed(1)
+np.random.shuffle(complete)
+training = complete[0:200,:]
+validation = complete[200:230,:]
+test = complete[230:260,:]
+print("Number of Baldwin in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
+print("Number of Baldwin in validation set: " + str((np.shape(np.where(validation[:,-1]==0))[1])))
+print("Number of Baldwin in test set: " + str((np.shape(np.where(test[:,-1]==0))[1])))
+print("Number of Carell in training set: " + str((np.shape(np.where(training[:,-1]==1))[1])))
+print("Number of Carell in validation set: " + str((np.shape(np.where(validation[:,-1]==1))[1])))
+print("Number of Carell in test set: " + str((np.shape(np.where(test[:,-1]==1))[1])))
+theta0 = np.random.normal(0,0.2,1025)
 
+training_labels = training[:,-1]
+training = np.transpose(training[:,:-1])
+theta = grad_descent(f,df,training,training_labels,theta0,0.00001)
+
+#Training hypothesis
+ones_t = np.ones((1,training.shape[1]))
+training_with_bias = vstack((ones_t,training))
+training_hypothesis = np.dot(theta.T,training_with_bias)
+i = 0
+while i < training_hypothesis.shape[0]:
+    if training_hypothesis[i] > 0.5:
+        training_hypothesis[i] = 1
+    else:
+        training_hypothesis[i] = 0
+    i+=1
+print("Accuracy percentage in training set:" + str(np.sum(np.equal(training_hypothesis,training_labels))/200.0))
+
+#Validation hypothesis
+validation_labels = validation[:,-1]
+validation = np.transpose(validation[:,:-1])
+ones_v = np.ones((1,validation.shape[1]))
+validation_with_bias = vstack((ones_v,validation))
+validation_hypothesis = np.dot(theta.T,validation_with_bias)
+i=0
+while i < validation_hypothesis.shape[0]:
+    if validation_hypothesis[i] > 0.5:
+        validation_hypothesis[i] = 1
+    else:
+        validation_hypothesis[i] = 0
+    i+=1
+
+print("Accuracy percentage in validation set:" + str(np.sum(np.equal(validation_hypothesis,validation_labels))/30.0))
+
+test_labels = test[:,-1]
+test = np.transpose(test[:,:-1])
+ones_test = np.ones((1,test.shape[1]))
+test_with_bias = vstack((ones_test,test))
+test_hypothesis = np.dot(theta.T,test_with_bias)
+i=0
+while i < test_hypothesis.shape[0]:
+    if test_hypothesis[i] > 0.5:
+        test_hypothesis[i] = 1
+    else:
+        test_hypothesis[i] = 0
+    i+=1
+
+print("Accuracy percentage in test set:" + str(np.sum(np.equal(test_hypothesis,test_labels))/30.0))
+
+theta = theta[1:]
+theta = np.reshape(theta,(32,32))
+plt.imshow(theta)
+plt.show()
+
+
+'''
 np.random.shuffle(complete)
 training = complete[0:200,:]
 validation = complete[200:220,:]
@@ -187,7 +257,8 @@ print("Number of Carell in training set: " + str((np.shape(np.where(training[:,-
 print("Number of Carell in validation set: " + str((np.shape(np.where(validation[:,-1]==1))[1])))
 print("Number of Carell in test set: " + str((np.shape(np.where(test[:,-1]==1))[1])))
 theta0 = np.random.normal(0.1,0.05,1025)
-'''
+
+
 training = training[:,:-1]
 print(training.shape)
 print(np.transpose(training).shape)
@@ -195,7 +266,7 @@ ones = np.ones((1,np.shape(training)[0]))
 print(ones.shape)
 sos = np.vstack((ones,np.transpose(training)))
 print(sos.shape)
-'''
+
 theta = grad_descent(f,df,np.transpose(training[:,:-1]),training[:,-1],theta0,0.00001)
 
 #Generating a hypothesis on training set:
@@ -240,16 +311,4 @@ theta = theta[1:]
 theta = np.reshape(theta,(32,32))
 plt.imshow(theta)
 plt.show()
-
-
-'''
-directory = os.path.join(os.getcwd(),"cropped")
-img = imread(os.path.join(directory,"baldwin0.jpg"))/255.0
-print(img.shape)
-img = img.reshape((img.flatten().shape[0],1))
-print(img.shape)
-theta = np.ones((1025,))
-x = np.vstack((np.ones((1,np.shape(img)[1])),img))
-y = 1
-test = np.sum((y - sigm(np.sum(np.dot(theta.T,x))))**2)
 '''
