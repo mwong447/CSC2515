@@ -158,6 +158,7 @@ def getDataLabels(act,partNumber):
     y = []
     for a in act:
         name = a.split()[1].lower()
+        print(name)
         for file in os.listdir(directory):
             filename = str(file)
             if name in filename:
@@ -170,8 +171,6 @@ def main():
     '''
     #############################################################################################################
     Code for Part 3 of the assignment - proceeds by getting cropped images of both Alec Baldwin and Steve Carell.
-
-
     '''
     #Declare list of actors for processing
     act = ['Alec Baldwin', 'Steve Carell']
@@ -198,7 +197,9 @@ def main():
     print("Number of Carell in training set: " + str((np.shape(np.where(training[:,-1]==1))[1])))
     print("Number of Carell in validation set: " + str((np.shape(np.where(validation[:,-1]==1))[1])))
     print("Number of Carell in test set: " + str((np.shape(np.where(test[:,-1]==1))[1])))
-    theta0 = np.random.normal(0,0.2,1025)
+    theta0 = np.ones((1025,))
+    #theta0 = np.random.normal(0,0.2,1025)
+    print(theta0.shape)
 
     training_labels = training[:,-1]
     training = np.transpose(training[:,:-1])
@@ -248,7 +249,16 @@ def main():
 
     print("Accuracy percentage in test set:" + str(np.sum(np.equal(test_hypothesis,test_labels))/30.0))
     print("Moving onto code for part 4")
+    '''
+    theta = theta[1:]
+    print(theta.shape)
+    test = np.reshape(theta,(32,32))
+    print(test.shape)
+    plt.imshow(test,cmap='RdBu')
+    plt.show()
+    '''
     
+
     
     
     '''
@@ -256,6 +266,7 @@ def main():
     Code for Part 4 of the assignment - proceeds by getting cropped images of both Alec Baldwin and Steve Carell.
     #############################################################################################################
     '''
+    
     act =['Alec Baldwin', 'Bill Hader', 'Steve Carell']
     getCroppedData(act,"facescrub_actors.txt",4)
     act =['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon']
@@ -265,10 +276,44 @@ def main():
     x = getDataMatrix(4)
     print(x.shape)
     y = getDataLabels(act,4)
+    print(y)
     print(y.shape)
-    
     i = 0
+    #Cleaning up data matrix for classification - 0 is female, 1 is male
 
+    while i < y.shape[0]:
+        if y[i] < 3:
+            y[i] = 0
+        else:
+            y[i] = 1
+        i+=1
+    
+    complete = np.column_stack((x,y))
+    np.random.seed(1)
+    np.random.shuffle(complete)
+    print(complete)
+    training = complete[0:600,:]
+    validation = complete[601:691,:]
+    test = complete[692:782,:]
+    print("Number of Females in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
+    print("Number of Males in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
+    theta0 = np.ones((1025,))
+    training_labels = training[:,-1]
+    training = np.transpose(training[:,:-1])
+    theta1 = grad_descent(f,df,training,training_labels,theta0,0.000001)
+
+    #Training hypothesis
+    ones_t = np.ones((1,training.shape[1]))
+    training_with_bias = vstack((ones_t,training))
+    training_hypothesis = np.dot(theta.T,training_with_bias)
+    i = 0
+    while i < training_hypothesis.shape[0]:
+        if training_hypothesis[i] > 0.5:
+            training_hypothesis[i] = 1
+        else:
+            training_hypothesis[i] = 0
+        i+=1
+    print("Accuracy percentage in training set:" + str(np.sum(np.equal(training_hypothesis,training_labels))/600.0))
 
 
 
