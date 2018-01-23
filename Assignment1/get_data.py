@@ -60,9 +60,10 @@ def getRawData():
                     except urllib.error.ContentTooShortError:
                         print("Content too short")
 
-def getCroppedData(list,file):
-    if not os.path.exists(os.path.join(os.getcwd(),"cropped/")):
-        os.makedirs(os.path.join(os.getcwd(),"cropped/"))
+def getCroppedData(list,file, partNumber):
+    partString = str("cropped"+str(partNumber)+"/")
+    if not os.path.exists(os.path.join(os.getcwd(),partString)):
+        os.makedirs(os.path.join(os.getcwd(),partString))
     for a in list:
         name = a.split()[1].lower()
         i=0
@@ -71,11 +72,11 @@ def getCroppedData(list,file):
                 filename = name+str(i)+'.'+line.split()[4].split('.')[-1]
                 if filename.endswith(".jpg") and i != 130:
                     try:
-                        if os.path.isfile(os.path.join(os.path.join(os.getcwd(),"cropped"),filename)):
+                        if os.path.isfile(os.path.join(os.path.join(os.getcwd(),partString),filename)):
                             continue
                         url = line.split()[4]
                         print("Attempting to look at URL:" + url)
-                        
+                        print("Filename is: " + filename)
                         print("Cropping image...")
                         x1 = int(line.split()[5].split(",")[0])
                         y1 = int(line.split()[5].split(",")[1])
@@ -89,7 +90,7 @@ def getCroppedData(list,file):
 
                             img = imresize(img,[32,32],'nearest')
                             print("Attempting to save file to disk")
-                            imsave(os.path.join(os.path.join(os.getcwd(),"cropped"),filename),img)
+                            imsave(os.path.join(os.path.join(os.getcwd(),partString),filename),img)
                             i+=1
                         except IOError:
                             print("Unable to read image")
@@ -138,8 +139,9 @@ def label(x):
     label = flattenData(x)
     return np.sum(label)
 
-def getDataMatrix():
-    directory = os.path.join(os.getcwd(),"cropped")
+def getDataMatrix(partNumber):
+    directory = str("cropped" + str(partNumber) + "/")
+    directory = os.path.join(os.getcwd(),directory)
     x = []
     for file in os.listdir(directory):
         img = imread(os.path.join(directory,str(file)))
@@ -149,9 +151,10 @@ def getDataMatrix():
     x = np.array(x)
     return x
 
-def getDataLabels(act):
+def getDataLabels(act,partNumber):
+    partNo = str("cropped" + str(partNumber)+ "/")
     i=0.0
-    directory = os.path.join(os.getcwd(),"cropped")
+    directory = os.path.join(os.getcwd(),partNo)
     y = []
     for a in act:
         name = a.split()[1].lower()
@@ -163,152 +166,111 @@ def getDataLabels(act):
     return np.transpose(y)
 
 
-
-#Declare list of actors for processing
-act = ['Alec Baldwin', 'Steve Carell']
-#getCroppedData(act,"facescrub_actors.txt")
-x = getDataMatrix()
-print(x.shape)
-y = getDataLabels(act)
-print(y.shape)
+def main():
+    '''
+    #############################################################################################################
+    Code for Part 3 of the assignment - proceeds by getting cropped images of both Alec Baldwin and Steve Carell.
 
 
-#concatenate the data matrix and labels for processing
-print(x.shape)
-print(y.shape)
-complete = np.column_stack((x,y))
-print(complete.shape)
-np.random.seed(1)
-np.random.shuffle(complete)
-training = complete[0:200,:]
-validation = complete[200:230,:]
-test = complete[230:260,:]
-print("Number of Baldwin in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
-print("Number of Baldwin in validation set: " + str((np.shape(np.where(validation[:,-1]==0))[1])))
-print("Number of Baldwin in test set: " + str((np.shape(np.where(test[:,-1]==0))[1])))
-print("Number of Carell in training set: " + str((np.shape(np.where(training[:,-1]==1))[1])))
-print("Number of Carell in validation set: " + str((np.shape(np.where(validation[:,-1]==1))[1])))
-print("Number of Carell in test set: " + str((np.shape(np.where(test[:,-1]==1))[1])))
-theta0 = np.random.normal(0,0.2,1025)
-
-training_labels = training[:,-1]
-training = np.transpose(training[:,:-1])
-theta = grad_descent(f,df,training,training_labels,theta0,0.00001)
-
-#Training hypothesis
-ones_t = np.ones((1,training.shape[1]))
-training_with_bias = vstack((ones_t,training))
-training_hypothesis = np.dot(theta.T,training_with_bias)
-i = 0
-while i < training_hypothesis.shape[0]:
-    if training_hypothesis[i] > 0.5:
-        training_hypothesis[i] = 1
-    else:
-        training_hypothesis[i] = 0
-    i+=1
-print("Accuracy percentage in training set:" + str(np.sum(np.equal(training_hypothesis,training_labels))/200.0))
-
-#Validation hypothesis
-validation_labels = validation[:,-1]
-validation = np.transpose(validation[:,:-1])
-ones_v = np.ones((1,validation.shape[1]))
-validation_with_bias = vstack((ones_v,validation))
-validation_hypothesis = np.dot(theta.T,validation_with_bias)
-i=0
-while i < validation_hypothesis.shape[0]:
-    if validation_hypothesis[i] > 0.5:
-        validation_hypothesis[i] = 1
-    else:
-        validation_hypothesis[i] = 0
-    i+=1
-
-print("Accuracy percentage in validation set:" + str(np.sum(np.equal(validation_hypothesis,validation_labels))/30.0))
-
-test_labels = test[:,-1]
-test = np.transpose(test[:,:-1])
-ones_test = np.ones((1,test.shape[1]))
-test_with_bias = vstack((ones_test,test))
-test_hypothesis = np.dot(theta.T,test_with_bias)
-i=0
-while i < test_hypothesis.shape[0]:
-    if test_hypothesis[i] > 0.5:
-        test_hypothesis[i] = 1
-    else:
-        test_hypothesis[i] = 0
-    i+=1
-
-print("Accuracy percentage in test set:" + str(np.sum(np.equal(test_hypothesis,test_labels))/30.0))
-
-theta = theta[1:]
-theta = np.reshape(theta,(32,32))
-plt.imshow(theta)
-plt.show()
+    '''
+    #Declare list of actors for processing
+    act = ['Alec Baldwin', 'Steve Carell']
+    #getCroppedData(act,"facescrub_actors.txt",3)
+    x = getDataMatrix(3)
+    print(x.shape)
+    y = getDataLabels(act,3)
+    print(y.shape)
 
 
-'''
-np.random.shuffle(complete)
-training = complete[0:200,:]
-validation = complete[200:220,:]
-test = complete[220:240:]
-print("Number of Baldwin in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
-print("Number of Baldwin in validation set: " + str((np.shape(np.where(validation[:,-1]==0))[1])))
-print("Number of Baldwin in test set: " + str((np.shape(np.where(test[:,-1]==0))[1])))
-print("Number of Carell in training set: " + str((np.shape(np.where(training[:,-1]==1))[1])))
-print("Number of Carell in validation set: " + str((np.shape(np.where(validation[:,-1]==1))[1])))
-print("Number of Carell in test set: " + str((np.shape(np.where(test[:,-1]==1))[1])))
-theta0 = np.random.normal(0.1,0.05,1025)
+    #concatenate the data matrix and labels for processing
+    print(x.shape)
+    print(y.shape)
+    complete = np.column_stack((x,y))
+    print(complete.shape)
+    np.random.seed(4)
+    np.random.shuffle(complete)
+    training = complete[0:200,:]
+    validation = complete[200:230,:]
+    test = complete[230:260,:]
+    print("Number of Baldwin in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
+    print("Number of Baldwin in validation set: " + str((np.shape(np.where(validation[:,-1]==0))[1])))
+    print("Number of Baldwin in test set: " + str((np.shape(np.where(test[:,-1]==0))[1])))
+    print("Number of Carell in training set: " + str((np.shape(np.where(training[:,-1]==1))[1])))
+    print("Number of Carell in validation set: " + str((np.shape(np.where(validation[:,-1]==1))[1])))
+    print("Number of Carell in test set: " + str((np.shape(np.where(test[:,-1]==1))[1])))
+    theta0 = np.random.normal(0,0.2,1025)
+
+    training_labels = training[:,-1]
+    training = np.transpose(training[:,:-1])
+    theta = grad_descent(f,df,training,training_labels,theta0,0.00001)
+
+    #Training hypothesis
+    ones_t = np.ones((1,training.shape[1]))
+    training_with_bias = vstack((ones_t,training))
+    training_hypothesis = np.dot(theta.T,training_with_bias)
+    i = 0
+    while i < training_hypothesis.shape[0]:
+        if training_hypothesis[i] > 0.5:
+            training_hypothesis[i] = 1
+        else:
+            training_hypothesis[i] = 0
+        i+=1
+    print("Accuracy percentage in training set:" + str(np.sum(np.equal(training_hypothesis,training_labels))/200.0))
+
+    #Validation hypothesis
+    validation_labels = validation[:,-1]
+    validation = np.transpose(validation[:,:-1])
+    ones_v = np.ones((1,validation.shape[1]))
+    validation_with_bias = vstack((ones_v,validation))
+    validation_hypothesis = np.dot(theta.T,validation_with_bias)
+    i=0
+    while i < validation_hypothesis.shape[0]:
+        if validation_hypothesis[i] > 0.5:
+            validation_hypothesis[i] = 1
+        else:
+            validation_hypothesis[i] = 0
+        i+=1
+
+    print("Accuracy percentage in validation set:" + str(np.sum(np.equal(validation_hypothesis,validation_labels))/30.0))
+
+    test_labels = test[:,-1]
+    test = np.transpose(test[:,:-1])
+    ones_test = np.ones((1,test.shape[1]))
+    test_with_bias = vstack((ones_test,test))
+    test_hypothesis = np.dot(theta.T,test_with_bias)
+    i=0
+    while i < test_hypothesis.shape[0]:
+        if test_hypothesis[i] > 0.5:
+            test_hypothesis[i] = 1
+        else:
+            test_hypothesis[i] = 0
+        i+=1
+
+    print("Accuracy percentage in test set:" + str(np.sum(np.equal(test_hypothesis,test_labels))/30.0))
+    print("Moving onto code for part 4")
+    
+    
+    
+    '''
+    #############################################################################################################
+    Code for Part 4 of the assignment - proceeds by getting cropped images of both Alec Baldwin and Steve Carell.
+    #############################################################################################################
+    '''
+    act =['Alec Baldwin', 'Bill Hader', 'Steve Carell']
+    getCroppedData(act,"facescrub_actors.txt",4)
+    act =['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon']
+    getCroppedData(act, "facescrub_actresses.txt",4)
+    
+    act =['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
+    x = getDataMatrix(4)
+    print(x.shape)
+    y = getDataLabels(act,4)
+    print(y.shape)
+    
+    i = 0
 
 
-training = training[:,:-1]
-print(training.shape)
-print(np.transpose(training).shape)
-ones = np.ones((1,np.shape(training)[0]))
-print(ones.shape)
-sos = np.vstack((ones,np.transpose(training)))
-print(sos.shape)
-
-theta = grad_descent(f,df,np.transpose(training[:,:-1]),training[:,-1],theta0,0.00001)
-
-#Generating a hypothesis on training set:
-hypothesis = np.matmul(theta.T, np.vstack((np.ones((1,np.shape(training[:,:-1])[0])),np.transpose(training[:,:-1]))))
-#Report on accuracy
-i = 0
-while i < hypothesis.shape[0]:
-    if hypothesis[i] > 0.5:
-        hypothesis[i] = 1
-    else:
-        hypothesis[i] = 0
-    i+=1
-
-trainingLabels = training[:,-1]
-print("Training accuracy is: " + str(sum(np.equal(hypothesis,trainingLabels))/200.0))
-
-validation_hypothesis=np.matmul(theta.T, np.vstack((np.ones((1,np.shape(validation[:,:-1])[0])),np.transpose(validation[:,:-1]))))
-i=0
-while i < validation_hypothesis.shape[0]:
-    if validation_hypothesis[i] > 0.5:
-        validation_hypothesis[i] = 1
-    else:
-        validation_hypothesis[i] = 0
-    i+=1
-
-validationLabels = test[:,-1]
-print("Validation accuracy is: " + str(sum(np.equal(validation_hypothesis,validationLabels))/40.0))
 
 
-test_hypothesis = np.matmul(theta.T, np.vstack((np.ones((1,np.shape(test[:,:-1])[0])),np.transpose(test[:,:-1]))))
-i=0
-while i < test_hypothesis.shape[0]:
-    if test_hypothesis[i] > 0.5:
-        test_hypothesis[i] = 1
-    else:
-        test_hypothesis[i] = 0
-    i+=1
-
-testingLabels = test[:,-1]
-print("Testing accuracy is: " + str(sum(np.equal(test_hypothesis,testingLabels))/40.0))
-theta = theta[1:]
-theta = np.reshape(theta,(32,32))
-plt.imshow(theta)
-plt.show()
-'''
+if __name__ == "__main__":
+    main()
