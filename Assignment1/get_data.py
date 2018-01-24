@@ -166,8 +166,7 @@ def getDataLabels(act,partNumber):
         i+=1.0
     return np.transpose(y)
 
-
-def main():
+def part3():
     '''
     #############################################################################################################
     Code for Part 3 of the assignment - proceeds by getting cropped images of both Alec Baldwin and Steve Carell.
@@ -248,7 +247,7 @@ def main():
         i+=1
 
     print("Accuracy percentage in test set:" + str(np.sum(np.equal(test_hypothesis,test_labels))/30.0))
-    print("Moving onto code for part 4")
+    return theta
     '''
     theta = theta[1:]
     print(theta.shape)
@@ -257,10 +256,103 @@ def main():
     plt.imshow(test,cmap='RdBu')
     plt.show()
     '''
+
+def part4ai(theta):
+    '''
+    #####################################################################################################################
+    Code for Part 4a, Part 1
+    #####################################################################################################################
     
+    
+    act =['Alec Baldwin', 'Bill Hader', 'Steve Carell']
+    getCroppedData(act,"facescrub_actors.txt",str(4+"ai"))
+    act =['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon']
+    getCroppedData(act, "facescrub_actresses.txt",str(4+"ai"))
+    
+    act =['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
+    #Store all actor/actress information in a master matrix
+    x = getDataMatrix((str(4+"ai")))
+    
+    #Get the label information - in this case from 0-5
+    y = getDataLabels(act,str(4+"ai"))
+    print(y)
+    print(y.shape)
+
+    #Stack the data and the labels    
+    complete = np.column_stack((x,y))
+    '''
+    #Outputting thetas for full training set of 100 for both Baldwin and Carell
+    theta = theta[1:]
+    print(theta.shape)
+    test = np.reshape(theta,(32,32))
+    print(test.shape)
+    plt.imshow(test,cmap='RdBu')
+    plt.show()
+
+    #Outputting thetas for training set of 2 images from both sets
+    #Declare list of actors for processing
+    act = ['Alec Baldwin', 'Steve Carell']
+    #getCroppedData(act,"facescrub_actors.txt",3)
+    x = getDataMatrix(3)
+    print(x.shape)
+    y = getDataLabels(act,3)
+    complete = np.column_stack((x,y))
+
+    #Get two from each
+    training0 = complete[random.randint(0,130),:]
+    training1 = complete[random.randint(0,130),:]
+    training2 = complete[random.randint(131,260),:]
+    training3 = complete[random.randint(131,260),:]
+    while np.array_equal(training0,training1):
+        training1 = complete[random.randint(0,130),:]
+    while np.array_equal(training2,training3):
+        training3 = complete[random.randint(131,260),:]
+    small_train = vstack((training0,training1))
+    small_train = vstack((small_train,training2))
+    small_train = vstack((small_train,training3))
+    small_train_labels = small_train[:,-1]
+    small_train = np.transpose(small_train[:,:-1])
+
+    theta0 = np.ones((1025,))
+    theta = grad_descent(f,df,small_train,small_train_labels,theta0,0.0001)
+    theta = theta[1:]
+    print(theta.shape)
+    test = np.reshape(theta,(32,32))
+    print(test.shape)
+    plt.imshow(test,cmap='RdBu')
+    plt.show()
 
     
-    
+    '''
+    np.random.seed(1)
+    np.random.shuffle(complete)
+    print(complete)
+    training = complete[0:600,:]
+    validation = complete[601:691,:]
+    test = complete[692:782,:]
+    print("Number of Females in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
+    print("Number of Males in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
+    theta0 = np.ones((1025,))
+    training_labels = training[:,-1]
+    training = np.transpose(training[:,:-1])
+    theta1 = grad_descent(f,df,training,training_labels,theta0,0.000001)
+
+    #Training hypothesis
+    ones_t = np.ones((1,training.shape[1]))
+    training_with_bias = vstack((ones_t,training))
+    training_hypothesis = np.dot(theta.T,training_with_bias)
+    i = 0
+    while i < training_hypothesis.shape[0]:
+        if training_hypothesis[i] > 0.5:
+            training_hypothesis[i] = 1
+        else:
+            training_hypothesis[i] = 0
+        i+=1
+    print("Accuracy percentage in training set:" + str(np.sum(np.equal(training_hypothesis,training_labels))/600.0))
+    '''
+
+
+def part4aii():
     '''
     #############################################################################################################
     Code for Part 4 of the assignment - proceeds by getting cropped images of both Alec Baldwin and Steve Carell.
@@ -280,7 +372,6 @@ def main():
     print(y.shape)
     i = 0
     #Cleaning up data matrix for classification - 0 is female, 1 is male
-
     while i < y.shape[0]:
         if y[i] < 3:
             y[i] = 0
@@ -314,6 +405,11 @@ def main():
             training_hypothesis[i] = 0
         i+=1
     print("Accuracy percentage in training set:" + str(np.sum(np.equal(training_hypothesis,training_labels))/600.0))
+
+
+def main():
+    theta = part3()
+    part4ai(theta)
 
 
 
