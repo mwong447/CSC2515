@@ -119,11 +119,11 @@ def df(x, y, theta):
     x = np.vstack((ones,x))
     return -2*np.sum((y-np.dot(theta.T,x))*x, 1)
     
-def grad_descent(f,df,x,y,init_t,alpha):
+def grad_descent(f,df,x,y,init_t,alpha, iterations):
     EPS = 1e-5
     prev_t = init_t-10*EPS
     t = init_t.copy()
-    max_iter = 10000
+    max_iter = iterations
     iter = 0
     while np.linalg.norm(t-prev_t) > EPS and iter < max_iter:
         prev_t=t.copy()
@@ -167,10 +167,13 @@ def getDataLabels(act,partNumber):
     return np.transpose(y)
 
 def part3():
-    '''
+    
     #############################################################################################################
+    '''
     Code for Part 3 of the assignment - proceeds by getting cropped images of both Alec Baldwin and Steve Carell.
     '''
+    #############################################################################################################
+    
     #Declare list of actors for processing
     act = ['Alec Baldwin', 'Steve Carell']
     #getCroppedData(act,"facescrub_actors.txt",3)
@@ -202,7 +205,7 @@ def part3():
 
     training_labels = training[:,-1]
     training = np.transpose(training[:,:-1])
-    theta = grad_descent(f,df,training,training_labels,theta0,0.00001)
+    theta = grad_descent(f,df,training,training_labels,theta0,0.00001,10000)
 
     #Training hypothesis
     ones_t = np.ones((1,training.shape[1]))
@@ -257,37 +260,20 @@ def part3():
     plt.show()
     '''
 
-def part4ai(theta):
+def part4a(theta):
     '''
     #####################################################################################################################
-    Code for Part 4a, Part 1
+    Code for Part 4
     #####################################################################################################################
-    
-    
-    act =['Alec Baldwin', 'Bill Hader', 'Steve Carell']
-    getCroppedData(act,"facescrub_actors.txt",str(4+"ai"))
-    act =['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon']
-    getCroppedData(act, "facescrub_actresses.txt",str(4+"ai"))
-    
-    act =['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
-    #Store all actor/actress information in a master matrix
-    x = getDataMatrix((str(4+"ai")))
-    
-    #Get the label information - in this case from 0-5
-    y = getDataLabels(act,str(4+"ai"))
-    print(y)
-    print(y.shape)
-
-    #Stack the data and the labels    
-    complete = np.column_stack((x,y))
     '''
     #Outputting thetas for full training set of 100 for both Baldwin and Carell
     theta = theta[1:]
     print(theta.shape)
     test = np.reshape(theta,(32,32))
-    print(test.shape)
-    plt.imshow(test,cmap='RdBu')
-    plt.show()
+    plt.imsave("complete_thetas.jpg",test,cmap='RdBu')
+    
+    
+    
 
     #Outputting thetas for training set of 2 images from both sets
     #Declare list of actors for processing
@@ -313,61 +299,131 @@ def part4ai(theta):
     small_train_labels = small_train[:,-1]
     small_train = np.transpose(small_train[:,:-1])
 
+    #Saving thetas for two actors
     theta0 = np.ones((1025,))
-    theta = grad_descent(f,df,small_train,small_train_labels,theta0,0.0001)
+    theta = grad_descent(f,df,small_train,small_train_labels,theta0,0.0001,10000)
     theta = theta[1:]
     print(theta.shape)
     test = np.reshape(theta,(32,32))
+    plt.imsave('two_actor_thetas.jpg',test,cmap='RdBu')
+    
+    
+
+    #Implementing gradient descent for thetas on full training set by modifying the number of iterations and initializing theta differently
+    training = complete[0:200,:]
+    print("Number of Baldwin in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
+    print("Number of Carell in training set: " + str((np.shape(np.where(training[:,-1]==1))[1])))
+    training_labels = training[:,-1]
+    training = np.transpose(training[:,:-1])
+    theta0 = np.ones((1025,))
+    theta = grad_descent(f,df,training,training_labels,theta0,0.00001,10000)
+    theta = theta[1:]
+    test = np.reshape(theta,(32,32))
+    plt.imsave('two_actor_thetas_ones_10000_iterations.jpg',test,cmap='RdBu')
+    
+    theta0 = np.random.normal(0,0.2,(1025,))
+    theta = grad_descent(f,df,training,training_labels,theta0,0.00001,10000)
+    theta = theta[1:]
+    test = np.reshape(theta,(32,32))
+    plt.imsave('two_actor_thetas__norm_10000_iterations.jpg',test,cmap='RdBu')
+
+    theta0 = np.random.lognormal(0,0.2,(1025,))
+    theta = grad_descent(f,df,training,training_labels,theta0,0.00001,10000)
+    theta = theta[1:]
+    test = np.reshape(theta,(32,32))
+    plt.imsave('two_actor_thetas__lognorm_10000_iterations.jpg',test,cmap='RdBu')
+
+    theta0 = np.ones((1025,))
+    theta = grad_descent(f,df,training,training_labels,theta0,0.00001,7500)
+    theta = theta[1:]
+    test = np.reshape(theta,(32,32))
+    plt.imsave('two_actor_thetas_ones_7500_iterations.jpg',test,cmap='RdBu')
+    
+    theta0 = np.random.normal(0,0.2,(1025,))
+    theta = grad_descent(f,df,training,training_labels,theta0,0.00001,7500)
+    theta = theta[1:]
+    test = np.reshape(theta,(32,32))
+    plt.imsave('two_actor_thetas__norm_7500_iterations.jpg',test,cmap='RdBu')
+
+    theta0 = np.random.lognormal(0,0.2,(1025,))
+    theta = grad_descent(f,df,training,training_labels,theta0,0.00001,7500)
+    theta = theta[1:]
+    test = np.reshape(theta,(32,32))
+    plt.imsave('two_actor_thetas__lognorm_7500_iterations.jpg',test,cmap='RdBu')
+
+    theta0 = np.ones((1025,))
+    theta = grad_descent(f,df,training,training_labels,theta0,0.00001,5000)
+    theta = theta[1:]
+    test = np.reshape(theta,(32,32))
+    plt.imsave('two_actor_thetas_ones_5000_iterations.jpg',test, cmap='RdBu')
+    
+    theta0 = np.random.normal(0,0.2,(1025,))
+    theta = grad_descent(f,df,training,training_labels,theta0,0.00001,5000)
+    theta = theta[1:]
+    test = np.reshape(theta,(32,32))
+    plt.imsave('two_actor_thetas__norm_5000_iterations.jpg',test,cmap='RdBu')
+
+    theta0 = np.random.lognormal(0,0.2,(1025,))
+    theta = grad_descent(f,df,training,training_labels,theta0,0.00001,5000)
+    theta = theta[1:]
+    test = np.reshape(theta,(32,32))
+    plt.imsave('two_actor_thetas__lognorm_5000_iterations.jpg',test,cmap='RdBu')
+
+    theta0 = np.ones((1025,))
+    theta = grad_descent(f,df,training,training_labels,theta0,0.00001,2500)
+    theta = theta[1:]
+    test = np.reshape(theta,(32,32))
+    plt.imsave('two_actor_thetas_ones_2500_iterations.jpg',test, cmap='RdBu')
+    
+    theta0 = np.random.normal(0,0.2,(1025,))
+    theta = grad_descent(f,df,training,training_labels,theta0,0.00001,2500)
+    theta = theta[1:]
+    test = np.reshape(theta,(32,32))
+    plt.imsave('two_actor_thetas__norm_2500_iterations.jpg',test,cmap='RdBu')
+
+    theta0 = np.random.lognormal(0,0.2,(1025,))
+    theta = grad_descent(f,df,training,training_labels,theta0,0.00001,2500)
+    theta = theta[1:]
+    test = np.reshape(theta,(32,32))
+    plt.imsave('two_actor_thetas__lognorm_2500_iterations.jpg',test,cmap='RdBu')
+
+
+    '''
+    theta = grad_descent(f,df,small_train,small_train_labels,theta0,0.001,10000)
+    theta = theta[1:]
+    print(theta.shape)
+    test = np.reshape(theta,(32,32))
+    imsave('two_actor_thetas_learning_rate0.jpg',cmap='RdBu')
     print(test.shape)
     plt.imshow(test,cmap='RdBu')
     plt.show()
 
-    
-    '''
-    np.random.seed(1)
-    np.random.shuffle(complete)
-    print(complete)
-    training = complete[0:600,:]
-    validation = complete[601:691,:]
-    test = complete[692:782,:]
-    print("Number of Females in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
-    print("Number of Males in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
     theta0 = np.ones((1025,))
-    training_labels = training[:,-1]
-    training = np.transpose(training[:,:-1])
-    theta1 = grad_descent(f,df,training,training_labels,theta0,0.000001)
-
-    #Training hypothesis
-    ones_t = np.ones((1,training.shape[1]))
-    training_with_bias = vstack((ones_t,training))
-    training_hypothesis = np.dot(theta.T,training_with_bias)
-    i = 0
-    while i < training_hypothesis.shape[0]:
-        if training_hypothesis[i] > 0.5:
-            training_hypothesis[i] = 1
-        else:
-            training_hypothesis[i] = 0
-        i+=1
-    print("Accuracy percentage in training set:" + str(np.sum(np.equal(training_hypothesis,training_labels))/600.0))
+    theta = grad_descent(f,df,small_train,small_train_labels,theta0,0.001,10000)
+    theta = theta[1:]
+    print(theta.shape)
+    test = np.reshape(theta,(32,32))
+    imsave('two_actor_thetas_learning_rate0.jpg',cmap='RdBu')
+    print(test.shape)
+    plt.imshow(test,cmap='RdBu')
+    plt.show()
     '''
-
-
-def part4aii():
-    '''
-    #############################################################################################################
-    Code for Part 4 of the assignment - proceeds by getting cropped images of both Alec Baldwin and Steve Carell.
-    #############################################################################################################
-    '''
+def part5():
     
+    #############################################################################################################
+    '''
+    Code for Part 5 of the assignment - proceeds by getting cropped images of both Alec Baldwin and Steve Carell.
+    '''
+    #############################################################################################################
+        
     act =['Alec Baldwin', 'Bill Hader', 'Steve Carell']
-    getCroppedData(act,"facescrub_actors.txt",4)
+    getCroppedData(act,"facescrub_actors.txt",5)
     act =['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon']
-    getCroppedData(act, "facescrub_actresses.txt",4)
-    
+    getCroppedData(act, "facescrub_actresses.txt",5)
     act =['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
-    x = getDataMatrix(4)
+    x = getDataMatrix(5)
     print(x.shape)
-    y = getDataLabels(act,4)
+    y = getDataLabels(act,5)
     print(y)
     print(y.shape)
     i = 0
@@ -382,34 +438,56 @@ def part4aii():
     complete = np.column_stack((x,y))
     np.random.seed(1)
     np.random.shuffle(complete)
-    print(complete)
-    training = complete[0:600,:]
-    validation = complete[601:691,:]
-    test = complete[692:782,:]
-    print("Number of Females in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
-    print("Number of Males in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
-    theta0 = np.ones((1025,))
-    training_labels = training[:,-1]
-    training = np.transpose(training[:,:-1])
-    theta1 = grad_descent(f,df,training,training_labels,theta0,0.000001)
 
-    #Training hypothesis
-    ones_t = np.ones((1,training.shape[1]))
-    training_with_bias = vstack((ones_t,training))
-    training_hypothesis = np.dot(theta.T,training_with_bias)
-    i = 0
-    while i < training_hypothesis.shape[0]:
-        if training_hypothesis[i] > 0.5:
-            training_hypothesis[i] = 1
-        else:
-            training_hypothesis[i] = 0
-        i+=1
-    print("Accuracy percentage in training set:" + str(np.sum(np.equal(training_hypothesis,training_labels))/600.0))
+    i = 50
+    for i < 601:
+        #Using the full set of training data
+        training = complete[0:i,:]
+        validation = complete[i+1:i+int(i*0.8),:]
+        print("Number of Females in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
+        print("Number of Males in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
+        
+        theta0 = np.ones((1025,))
+        training_labels = training[:,-1]
+        training = np.transpose(training[:,:-1])
+        theta1 = grad_descent(f,df,training,training_labels,theta0,0.000001)
+
+        #Training hypothesis
+        ones_t = np.ones((1,training.shape[1]))
+        training_with_bias = vstack((ones_t,training))
+        training_hypothesis = np.dot(theta.T,training_with_bias)
+        i = 0
+        while i < training_hypothesis.shape[0]:
+            if training_hypothesis[i] > 0.5:
+                training_hypothesis[i] = 1
+            else:
+                training_hypothesis[i] = 0
+            i+=1
+    
+        print("Accuracy percentage in training set:" + str(np.sum(np.equal(training_hypothesis,training_labels))/600.0))
+    
+        validation_labels = validation[:,-1]
+        validation = np.transpose(validation[:,:-1])
+        ones_v = np.ones((1,validation.shape[1]))
+        validation_with_bias = vstack((ones_v,validation))
+        validation_hypothesis = np.dot(theta.T,validation_with_bias)
+        i = 0
+        while i < validation_hypothesis.shape[0]:
+            if validation_hypothesis[i] > 0.5:
+                validation_hypothesis[i] = 1
+            else:
+                validation_hypothesis[i] = 0
+            i+=1
+
+        print("Accuracy percentage in validation set: "str(np.sum(np.equal(validation,validation_labels))/90.0)))
+        i+=50
+
 
 
 def main():
-    theta = part3()
-    part4ai(theta)
+    #theta = part3()
+    #part4a(theta)
+    part5()
 
 
 
