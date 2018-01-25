@@ -440,46 +440,48 @@ def part5():
     np.random.shuffle(complete)
 
     i = 50
-    for i < 601:
+    while i < 601:
         #Using the full set of training data
         training = complete[0:i,:]
         validation = complete[i+1:i+int(i*0.8),:]
         print("Number of Females in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
-        print("Number of Males in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
+        print("Number of Males in training set: " + str((np.shape(np.where(training[:,-1]==1))[1])))
+        print("Number of Females in validation set: " + str((np.shape(np.where(validation[:,-1]==0))[1])))
+        print("Number of Males in validation set: " + str((np.shape(np.where(validation[:,-1]==1))[1])))
         
         theta0 = np.ones((1025,))
         training_labels = training[:,-1]
         training = np.transpose(training[:,:-1])
-        theta1 = grad_descent(f,df,training,training_labels,theta0,0.000001)
+        theta1 = grad_descent(f,df,training,training_labels,theta0,0.000001,10000)
 
         #Training hypothesis
         ones_t = np.ones((1,training.shape[1]))
         training_with_bias = vstack((ones_t,training))
-        training_hypothesis = np.dot(theta.T,training_with_bias)
-        i = 0
-        while i < training_hypothesis.shape[0]:
-            if training_hypothesis[i] > 0.5:
-                training_hypothesis[i] = 1
+        training_hypothesis = np.dot(theta1.T,training_with_bias)
+        j = 0
+        while j < training_hypothesis.shape[0]:
+            if training_hypothesis[j] > 0.5:
+                training_hypothesis[j] = 1
             else:
-                training_hypothesis[i] = 0
-            i+=1
+                training_hypothesis[j] = 0
+            j+=1
     
-        print("Accuracy percentage in training set:" + str(np.sum(np.equal(training_hypothesis,training_labels))/600.0))
+        print("Accuracy percentage in training set:" + str(np.sum(np.equal(training_hypothesis,training_labels))/float(i)))
     
         validation_labels = validation[:,-1]
         validation = np.transpose(validation[:,:-1])
         ones_v = np.ones((1,validation.shape[1]))
         validation_with_bias = vstack((ones_v,validation))
-        validation_hypothesis = np.dot(theta.T,validation_with_bias)
-        i = 0
-        while i < validation_hypothesis.shape[0]:
-            if validation_hypothesis[i] > 0.5:
-                validation_hypothesis[i] = 1
+        validation_hypothesis = np.dot(theta1.T,validation_with_bias)
+        j = 0
+        while j < validation_hypothesis.shape[0]:
+            if validation_hypothesis[j] > 0.5:
+                validation_hypothesis[j] = 1
             else:
-                validation_hypothesis[i] = 0
-            i+=1
+                validation_hypothesis[j] = 0
+            j+=1
 
-        print("Accuracy percentage in validation set: "str(np.sum(np.equal(validation,validation_labels))/90.0)))
+        print("Accuracy percentage in validation set: " + str(np.sum(np.equal(validation,validation_labels))/(float(i*0.8))))
         i+=50
 
 
