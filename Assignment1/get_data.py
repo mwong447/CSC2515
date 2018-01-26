@@ -33,7 +33,6 @@ def rgb2gray(rgb):
     except IndexError:
         print("Image is already grayscale")
 
-
 def getRawData():
     actors = "facescrub_actors.txt"
     list = getActors(actors)
@@ -111,8 +110,7 @@ def flattenData(x):
 def f(x,y,theta):
     ones = np.ones((1,x.shape[1]))
     x = np.vstack((ones,x))
-    return np.sum(np.power((y-np.dot(theta.T,x)),2))
-    
+    return np.sum(np.power((y-np.dot(theta.T,x)),2))    
 
 def df(x, y, theta):
     ones = np.ones((1,x.shape[1]))
@@ -134,6 +132,16 @@ def grad_descent(f,df,x,y,init_t,alpha, iterations):
             print("Gradient: " + str(df(x,y,t)))
         iter += 1
     return t
+
+def f2(x,y,theta):
+    ones = np.ones((1,x.shape[1]))
+    x = np.vstack((ones,x))
+    hypothesis = np.matmul(theta.T,x)
+    loss = np.power((hypothesis-y),2)
+    return loss
+
+def df2(x,y,theta):
+    return None
 
 def label(x):
     label = flattenData(x)
@@ -167,7 +175,6 @@ def getDataLabels(act,partNumber):
     return np.transpose(y)
 
 def part3():
-    
     #############################################################################################################
     '''
     Code for Part 3 of the assignment - proceeds by getting cropped images of both Alec Baldwin and Steve Carell.
@@ -176,18 +183,13 @@ def part3():
     
     #Declare list of actors for processing
     act = ['Alec Baldwin', 'Steve Carell']
-    #getCroppedData(act,"facescrub_actors.txt",3)
+    getCroppedData(act,"facescrub_actors.txt",3)
     x = getDataMatrix(3)
-    print(x.shape)
     y = getDataLabels(act,3)
-    print(y.shape)
-
-
-    #concatenate the data matrix and labels for processing
     print(x.shape)
-    print(y.shape)
+    #concatenate the data matrix and labels for processing
+    
     complete = np.column_stack((x,y))
-    print(complete.shape)
     np.random.seed(4)
     np.random.shuffle(complete)
     training = complete[0:200,:]
@@ -201,8 +203,7 @@ def part3():
     print("Number of Carell in test set: " + str((np.shape(np.where(test[:,-1]==1))[1])))
     theta0 = np.ones((1025,))
     #theta0 = np.random.normal(0,0.2,1025)
-    print(theta0.shape)
-
+    
     training_labels = training[:,-1]
     training = np.transpose(training[:,:-1])
     theta = grad_descent(f,df,training,training_labels,theta0,0.00001,10000)
@@ -251,14 +252,6 @@ def part3():
 
     print("Accuracy percentage in test set:" + str(np.sum(np.equal(test_hypothesis,test_labels))/30.0))
     return theta
-    '''
-    theta = theta[1:]
-    print(theta.shape)
-    test = np.reshape(theta,(32,32))
-    print(test.shape)
-    plt.imshow(test,cmap='RdBu')
-    plt.show()
-    '''
 
 def part4a(theta):
     '''
@@ -408,6 +401,7 @@ def part4a(theta):
     plt.imshow(test,cmap='RdBu')
     plt.show()
     '''
+
 def part5():
     
     #############################################################################################################
@@ -422,10 +416,7 @@ def part5():
     getCroppedData(act, "facescrub_actresses.txt",5)
     act =['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
     x = getDataMatrix(5)
-    print(x.shape)
     y = getDataLabels(act,5)
-    print(y)
-    print(y.shape)
     i = 0
     #Cleaning up data matrix for classification - 0 is female, 1 is male
     while i < y.shape[0]:
@@ -484,12 +475,27 @@ def part5():
         print("Accuracy percentage in validation set: " + str(np.sum(np.equal(validation,validation_labels))/(float(i*0.8))))
         i+=50
 
+def part6():
+    #Testing the loss function
+    theta = np.array([[1,1],[4,3],[6,5]])
+    x = np.array([[3,9],[1,2]])
+    y = np.array([[1,0],[0,1]])
+    print(theta)
+    print(theta.shape)
+    print(x)
+    print(x.shape)
+    print(y)
+    print(y.shape)
+    print(f2(x,y,theta))
+    
+
 
 
 def main():
     #theta = part3()
     #part4a(theta)
-    part5()
+    #part5()
+    part6()
 
 
 

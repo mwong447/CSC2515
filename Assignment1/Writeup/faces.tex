@@ -1,0 +1,392 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Programming/Coding Assignment
+% LaTeX Template
+%
+% This template has been downloaded from:
+% http://www.latextemplates.com
+%
+% Original author:
+% Ted Pavlic (http://www.tedpavlic.com)
+%
+% Note:
+% The \lipsum[#] commands throughout this template generate dummy text
+% to fill the template out. These commands should all be removed when 
+% writing assignment content.
+%
+% This template uses a Perl script as an example snippet of code, most other
+% languages are also usable. Configure them in the "CODE INCLUSION 
+% CONFIGURATION" section.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass{article}
+
+\usepackage{fancyhdr} % Required for custom headers
+\usepackage{lastpage} % Required to determine the last page for the footer
+\usepackage{extramarks} % Required for headers and footers
+\usepackage[usenames,dvipsnames]{color} % Required for custom colors
+\usepackage{graphicx} % Required to insert images
+\usepackage{subcaption}
+\usepackage{listings} % Required for insertion of code
+\usepackage{courier} % Required for the courier font
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsmath}
+%Code for including Python code in Latex - outlined on the Piazza forum post, taken from Stackoverflow
+
+\usepackage{enumitem}
+\usepackage[utf8]{inputenc}
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=Python,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=true{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+% Margins
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.5in
+\textheight=9.0in
+\headsep=0.25in
+
+\linespread{1.1} % Line spacing
+
+% Set up the header and footer
+\pagestyle{fancy}
+\lhead{\hmwkAuthorName} % Top left header
+\chead{\hmwkClass\ (\hmwkClassTime): \hmwkTitle} % Top center head
+%\rhead{\firstxmark} % Top right header
+\lfoot{\lastxmark} % Bottom left footer
+\cfoot{} % Bottom center footer
+\rfoot{Page\ \thepage\ of\ \protect\pageref{LastPage}} % Bottom right footer
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs
+
+%----------------------------------------------------------------------------------------
+%	CODE INCLUSION CONFIGURATION
+%----------------------------------------------------------------------------------------
+
+\definecolor{MyDarkGreen}{rgb}{0.0,0.4,0.0} % This is the color used for comments
+\lstloadlanguages{Perl} % Load Perl syntax for listings, for a list of other languages supported see: ftp://ftp.tex.ac.uk/tex-archive/macros/latex/contrib/listings/listings.pdf
+\lstset{language=Perl, % Use Perl in this example
+        frame=single, % Single frame around code
+        basicstyle=\small\ttfamily, % Use small true type font
+        keywordstyle=[1]\color{Blue}\bf, % Perl functions bold and blue
+        keywordstyle=[2]\color{Purple}, % Perl function arguments purple
+        keywordstyle=[3]\color{Blue}\underbar, % Custom functions underlined and blue
+        identifierstyle=, % Nothing special about identifiers                                         
+        commentstyle=\usefont{T1}{pcr}{m}{sl}\color{MyDarkGreen}\small, % Comments small dark green courier font
+        stringstyle=\color{Purple}, % Strings are purple
+        showstringspaces=false, % Don't put marks in string spaces
+        tabsize=5, % 5 spaces per tab
+        %
+        % Put standard Perl functions not included in the default language here
+        morekeywords={rand},
+        %
+        % Put Perl function parameters here
+        morekeywords=[2]{on, off, interp},
+        %
+        % Put user defined functions here
+        morekeywords=[3]{test},
+       	%
+        morecomment=[l][\color{Blue}]{...}, % Line continuation (...) like blue comment
+        numbers=left, % Line numbers on left
+        firstnumber=1, % Line numbers start with line 1
+        numberstyle=\tiny\color{Blue}, % Line numbers are blue and small
+        stepnumber=5 % Line numbers go in steps of 5
+}
+
+% Creates a new command to include a perl script, the first parameter is the filename of the script (without .pl), the second parameter is the caption
+\newcommand{\perlscript}[2]{
+\begin{itemize}
+\item[]\lstinputlisting[caption=#2,label=#1]{#1.pl}
+\end{itemize}
+}
+
+%----------------------------------------------------------------------------------------
+%	DOCUMENT STRUCTURE COMMANDS
+%	Skip this unless you know what you're doing
+%----------------------------------------------------------------------------------------
+
+% Header and footer for when a page split occurs within a problem environment
+\newcommand{\enterProblemHeader}[1]{
+%\nobreak\extramarks{#1}{#1 continued on next page\ldots}\nobreak
+%\nobreak\extramarks{#1 (continued)}{#1 continued on next page\ldots}\nobreak
+}
+
+% Header and footer for when a page split occurs between problem environments
+\newcommand{\exitProblemHeader}[1]{
+%\nobreak\extramarks{#1 (continued)}{#1 continued on next page\ldots}\nobreak
+%\nobreak\extramarks{#1}{}\nobreak
+}
+
+\setcounter{secnumdepth}{0} % Removes default section numbers
+\newcounter{homeworkProblemCounter} % Creates a counter to keep track of the number of problems
+\setcounter{homeworkProblemCounter}{-1}
+
+\newcommand{\homeworkProblemName}{}
+\newenvironment{homeworkProblem}[1][Problem \arabic{homeworkProblemCounter}]{ % Makes a new environment called homeworkProblem which takes 1 argument (custom name) but the default is "Problem #"
+\stepcounter{homeworkProblemCounter} % Increase counter for number of problems
+\renewcommand{\homeworkProblemName}{#1} % Assign \homeworkProblemName the name of the problem
+\section{\homeworkProblemName} % Make a section in the document with the custom problem count
+\enterProblemHeader{\homeworkProblemName} % Header and footer within the environment
+}{
+\exitProblemHeader{\homeworkProblemName} % Header and footer after the environment
+}
+
+\newcommand{\problemAnswer}[1]{ % Defines the problem answer command with the content as the only argument
+\noindent\framebox[\columnwidth][c]{\begin{minipage}{0.98\columnwidth}#1\end{minipage}} % Makes the box around the problem answer and puts the content inside
+}
+
+\newcommand{\homeworkSectionName}{}
+\newenvironment{homeworkSection}[1]{ % New environment for sections within homework problems, takes 1 argument - the name of the section
+\renewcommand{\homeworkSectionName}{#1} % Assign \homeworkSectionName to the name of the section from the environment argument
+\subsection{\homeworkSectionName} % Make a subsection with the custom name of the subsection
+\enterProblemHeader{\homeworkProblemName\ [\homeworkSectionName]} % Header and footer within the environment
+}{
+\enterProblemHeader{\homeworkProblemName} % Header and footer after the environment
+}
+
+%----------------------------------------------------------------------------------------
+%	NAME AND CLASS SECTION
+%----------------------------------------------------------------------------------------
+
+\newcommand{\hmwkTitle}{Assignment 1} % Assignment title
+\newcommand{\hmwkDueDate}{Monday,\ January\ 29,\ 2018} % Due date
+\newcommand{\hmwkClass}{CSC2515} % Course/class
+\newcommand{\hmwkClassTime}{L0101} % Class/lecture time
+\newcommand{\hmwkAuthorName}{Matthew Wong} % Your name
+
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\title{
+\vspace{2in}
+\textmd{\textbf{\hmwkClass:\ \hmwkTitle}}\\
+\normalsize\vspace{0.1in}\small{Due\ on\ \hmwkDueDate}\\
+\vspace{0.1in}
+\vspace{3in}
+}
+
+\author{\textbf{\hmwkAuthorName}}
+%\date{} % Insert date here if you want it to appear below your name
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+\maketitle
+\clearpage
+%----------------------------------------------------------------------------------------
+%	Introduction
+%----------------------------------------------------------------------------------------
+
+\begin{homeworkProblem}
+
+\noindent \textit{Introductory information and readme instructions}
+
+Attached, you will find the required submissions \textit{faces.py, faces.tex \& faces.pdf} in addition to the various folders of uncropped and cropped images.  Comments about the code are located in the \textit{faces.py} file and the code is separated out by function and can be run as necessary from a command line argument.  Outside of the function definitions for data retrieval, cleansing and storage, code for each section is labelled appropriately and can be run without internal dependencies.  Code was written in Python 3.5 - the packages used are outlined in the file header.
+
+\end{homeworkProblem}
+\clearpage
+%----------------------------------------------------------------------------------------
+%	PROBLEM 1
+%----------------------------------------------------------------------------------------
+
+% To have just one problem per page, simply put a \clearpage after each problem
+
+\begin{homeworkProblem}
+
+\noindent \textit{Dataset description}
+
+The dataset consists of $2359$ grayscale $25\times 25$-pixel of images of the letter ``a," rendered using various fonts. The letter appears in both uppercase and lowercase, and there is considerable variation in the appearance of the letters. However, examining the dataset, it appears that there are more print letters than letters in other fonts, and most of the letters are lowercase. A random sample of $25$ ``a"s is shown in Figure~\ref{fig:randim}.
+
+
+
+\textit{Advice: when describing a dataset, give a general description, and mention the things that would be important for a person who is working on the same problem that you are working on.}
+
+\end{homeworkProblem}
+\clearpage
+%----------------------------------------------------------------------------------------
+%	PROBLEM 2
+%----------------------------------------------------------------------------------------
+
+\begin{homeworkProblem}
+\noindent \textit{Splitting up the Data.}
+
+The algorithm that was used to shuffle the dataset originated from the \textit{numpy.random} library.
+
+
+
+\end{homeworkProblem}
+\clearpage
+%----------------------------------------------------------------------------------------
+
+%----------------------------------------------------------------------------------------
+%	PROBLEM 3
+%----------------------------------------------------------------------------------------
+
+\begin{homeworkProblem}
+\noindent \textit{Binary Classification between Steve Carrel and Alec Baldwin}
+
+As outlined in the assignment documentation, linear regression was used to create a binary classifier.  The cost function that was minimized was the quadratic cost function, also known as the least-squares cost function as outlined below.
+\begin{center}
+$J(\theta)=\sum_{i=1}^{n}(h_{\theta}(x^{(i)}-y^{(i)})^2$
+\end{center}
+
+Using the Gradient-Descent algorithm, a training accuracy of 100\% was obtained on the training data compared to a validation accuracy of 83\%.  The following code was used to implement the binary classifier.
+\begin{lstlisting}
+//part3 function call within faces.py
+  #Declare list of actors for processing
+    act = ['Alec Baldwin', 'Steve Carell']
+    getCroppedData(act,"facescrub_actors.txt",3)
+    x = getDataMatrix(3)
+    y = getDataLabels(act,3)
+    
+    #concatenate the data matrix and labels for processing
+    
+    complete = np.column_stack((x,y))
+    np.random.seed(4)
+    np.random.shuffle(complete)
+    training = complete[0:200,:]
+    validation = complete[200:230,:]
+    test = complete[230:260,:]
+    print("Number of Baldwin in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
+    print("Number of Baldwin in validation set: " + str((np.shape(np.where(validation[:,-1]==0))[1])))
+    print("Number of Baldwin in test set: " + str((np.shape(np.where(test[:,-1]==0))[1])))
+    print("Number of Carell in training set: " + str((np.shape(np.where(training[:,-1]==1))[1])))
+    print("Number of Carell in validation set: " + str((np.shape(np.where(validation[:,-1]==1))[1])))
+    print("Number of Carell in test set: " + str((np.shape(np.where(test[:,-1]==1))[1])))
+    theta0 = np.ones((1025,))
+    #theta0 = np.random.normal(0,0.2,1025)
+    
+    training_labels = training[:,-1]
+    training = np.transpose(training[:,:-1])
+    theta = grad_descent(f,df,training,training_labels,theta0,0.00001,10000)
+
+    #Training hypothesis
+    ones_t = np.ones((1,training.shape[1]))
+    training_with_bias = vstack((ones_t,training))
+    training_hypothesis = np.dot(theta.T,training_with_bias)
+    i = 0
+    while i < training_hypothesis.shape[0]:
+        if training_hypothesis[i] > 0.5:
+            training_hypothesis[i] = 1
+        else:
+            training_hypothesis[i] = 0
+        i+=1
+    print("Accuracy percentage in training set:" + str(np.sum(np.equal(training_hypothesis,training_labels))/200.0))
+
+    #Validation hypothesis
+    validation_labels = validation[:,-1]
+    validation = np.transpose(validation[:,:-1])
+    ones_v = np.ones((1,validation.shape[1]))
+    validation_with_bias = vstack((ones_v,validation))
+    validation_hypothesis = np.dot(theta.T,validation_with_bias)
+    i=0
+    while i < validation_hypothesis.shape[0]:
+        if validation_hypothesis[i] > 0.5:
+            validation_hypothesis[i] = 1
+        else:
+            validation_hypothesis[i] = 0
+        i+=1
+
+    print("Accuracy percentage in validation set:" + str(np.sum(np.equal(validation_hypothesis,validation_labels))/30.0))
+
+    test_labels = test[:,-1]
+    test = np.transpose(test[:,:-1])
+    ones_test = np.ones((1,test.shape[1]))
+    test_with_bias = vstack((ones_test,test))
+    test_hypothesis = np.dot(theta.T,test_with_bias)
+    i=0
+    while i < test_hypothesis.shape[0]:
+        if test_hypothesis[i] > 0.5:
+            test_hypothesis[i] = 1
+        else:
+            test_hypothesis[i] = 0
+        i+=1
+
+    print("Accuracy percentage in test set:" + str(np.sum(np.equal(test_hypothesis,test_labels))/30.0))
+    return theta
+\end{lstlisting}
+
+The Gradident Descent algorithm was modified for the purposes for this assignment was taken from the Galaxy code posted on the CSC2515 website.  In order to get the system to work, a suitable number of maximum iterations was performed, in addition to modifying the learning rate, $\alpha$.  I did not formalize my selection of the two parameters, but tried experimenting with different values.  I noticed that as $\alpha$ was increased by a factor of 10 (e.g. $10^{-4}$), there were errors in the matrix operations being performed, resulting in numerical overflow issues.  As $\alpha$ decreased, (e.g. $10^{-6}$) it was observed that both the training and validation sets exhibited lower accuracy in correctly identifying the individuals - perhaps indicating a local minimum.  However, this could certainly be investigated by modifying the number of maximum iterations (but in the cases mentioned, testing was completed on 10000 iterations).
+
+
+\end{homeworkProblem}
+\clearpage
+%----------------------------------------------------------------------------------------
+%	PROBLEM 4
+%----------------------------------------------------------------------------------------
+
+\begin{homeworkProblem}
+\noindent \textit{Splitting up the Data.}
+
+The algorithm that was used to shuffle the dataset originated from the \textit{numpy.random} library.
+
+
+
+\end{homeworkProblem}
+\clearpage
+%----------------------------------------------------------------------------------------
+%----------------------------------------------------------------------------------------
+%	PROBLEM 5
+%----------------------------------------------------------------------------------------
+
+\begin{homeworkProblem}
+\noindent \textit{Splitting up the Data.}
+
+The algorithm that was used to shuffle the dataset originated from the \textit{numpy.random} library.
+
+\end{homeworkProblem}
+\clearpage
+%----------------------------------------------------------------------------------------
+%----------------------------------------------------------------------------------------
+%	PROBLEM 6
+%----------------------------------------------------------------------------------------
+
+\begin{homeworkProblem}
+\noindent \textit{Mathematical Derivations of Gradient Descent}
+
+\begin{enumerate}[label=(\Alph*)]
+\item We can compute $\frac{\partial J}{\partial \theta_{pq}}$ by expanding the expression as outlined in the assignment documentation as follows:
+\begin{center}
+$J(\theta)=\sum_{i}\big((\theta^Tx^{(i)}-y^{(i)})^2_1+(\theta^Tx^{(i)}-y^{(i)})^2_2+\ldots+(\theta^Tx^{(i)}-y^{(i)})^1_j\big)$
+\linebreak
+$J(\theta)=(\theta^Tx^{(1)}-y^{(1)})^2_1+(\theta^Tx^{(1)}-y^{(1)})^2_2+\ldots(\theta^Tx^{(1)}-y^{(1)})^1_j+(\theta^Tx^{(2)}-y^{2)})^2_1+\ldots + (\theta^Tx^{(i)}-y^{(i)})^2_j$
+\end{center}
+Therefore, it appears we can model this double summation as a summation over the $p^{th}$ column and $q^{th}$ row.  Therefore, the partial derivative of a specific element, say, element $pq$ can be expressed as:
+\begin{center}
+$\boxed{\frac{\partial J}{\partial \theta _{pq}}=2x^{p}_{q}(\theta^T x^{p}-y^{p})^2_q}$
+
+\end{center}
+
+
+\end{enumerate}
+
+\end{homeworkProblem}
+\clearpage
+%----------------------------------------------------------------------------------------
+\end{document}
