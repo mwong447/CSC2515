@@ -138,24 +138,33 @@ def f2(x,y,theta):
     x = np.vstack((ones,x))
     hypothesis = np.matmul(theta.T,x)
     loss = np.power((hypothesis-y),2)
-    return loss
+    return np.sum(loss)
 
 def df2(x,y,theta):
-    return None
+    ones = np.ones((1,x.shape[1]))
+    x = np.vstack((ones,x))
+    hypothesis = np.matmul(theta.T,x)
+    loss = np.transpose(hypothesis-y)
+    gradient = 2*np.matmul(x,loss)
+    return gradient
 
 def label(x):
     label = flattenData(x)
     return np.sum(label)
 
-def getDataMatrix(partNumber):
+def getDataMatrix(act, partNumber):
     directory = str("cropped" + str(partNumber) + "/")
     directory = os.path.join(os.getcwd(),directory)
     x = []
-    for file in os.listdir(directory):
-        img = imread(os.path.join(directory,str(file)))
-        img = np.array(img)/255.0
-        img = img.flatten()
-        x.append(img)
+    for a in act:
+        name = a.split()[1].lower()
+        for file in os.listdir(directory):
+            filename = str(file)
+            if name in filename:
+                img = imread(os.path.join(directory,str(file)))
+                img = np.array(img)/255.0
+                img = img.flatten()
+                x.append(img)
     x = np.array(x)
     return x
 
@@ -174,6 +183,37 @@ def getDataLabels(act,partNumber):
         i+=1.0
     return np.transpose(y)
 
+def getMultipleDataLabels(act, partNumber):
+    partNo = str("cropped" + str(partNumber)+"/")
+    i = 0
+    directory = os.path.join(os.getcwd(),partNo)
+    names = []
+    for a in act:
+        name = a.split()[1].lower()
+        names.append(name)
+        for file in os.listdir(directory):
+            filename = str(file)
+            if name in filename:
+                i+=1
+    k = len(names)
+    y = np.zeros([k,i])
+    i = 0
+    k = 0
+    for a in act:
+        name = a.split()[1].lower()
+        for file in os.listdir(directory):
+            filename = str(file)
+            if name in filename:
+                y[k,i]=1
+                i+=1
+        k+=1
+    return y
+
+
+def getFileList(directory):
+    for file in os.listdir(directory):
+        print(str(file))
+
 def part3():
     #############################################################################################################
     '''
@@ -184,7 +224,7 @@ def part3():
     #Declare list of actors for processing
     act = ['Alec Baldwin', 'Steve Carell']
     getCroppedData(act,"facescrub_actors.txt",3)
-    x = getDataMatrix(3)
+    x = getDataMatrix(act,3)
     y = getDataLabels(act,3)
     print(x.shape)
     #concatenate the data matrix and labels for processing
@@ -272,7 +312,7 @@ def part4a(theta):
     #Declare list of actors for processing
     act = ['Alec Baldwin', 'Steve Carell']
     #getCroppedData(act,"facescrub_actors.txt",3)
-    x = getDataMatrix(3)
+    x = getDataMatrix(act,3)
     print(x.shape)
     y = getDataLabels(act,3)
     complete = np.column_stack((x,y))
@@ -415,7 +455,7 @@ def part5():
     act =['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon']
     getCroppedData(act, "facescrub_actresses.txt",5)
     act =['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
-    x = getDataMatrix(5)
+    x = getDataMatrix(act, 5)
     y = getDataLabels(act,5)
     i = 0
     #Cleaning up data matrix for classification - 0 is female, 1 is male
@@ -487,6 +527,15 @@ def part6():
     print(y)
     print(y.shape)
     print(f2(x,y,theta))
+
+def part7():
+    #Rough attempt at classification
+    act =['Alec Baldwin', 'Bill Hader', 'Steve Carell']
+    #x = getDataMatrix(act, 5)
+    #print(x.shape)
+    y = getMultipleDataLabels(act,5)
+    print(y)
+
     
 
 
@@ -495,7 +544,8 @@ def main():
     #theta = part3()
     #part4a(theta)
     #part5()
-    part6()
+    #part6()
+    part7()
 
 
 
