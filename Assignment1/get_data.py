@@ -137,15 +137,15 @@ def f2(x,y,theta):
     ones = np.ones((1,x.shape[1]))
     x = np.vstack((ones,x))
     hypothesis = np.matmul(theta.T,x)
-    loss = np.power((hypothesis-y),2)
+    loss = np.power((np.transpose(hypothesis)-y),2)
     return np.sum(loss)
 
 def df2(x,y,theta):
     ones = np.ones((1,x.shape[1]))
     x = np.vstack((ones,x))
     hypothesis = np.matmul(theta.T,x)
-    loss = np.transpose(hypothesis-y)
-    gradient = 2*np.matmul(x,loss)
+    loss = y-np.transpose(hypothesis)
+    gradient = -2*np.matmul(x,loss)
     return gradient
 
 def label(x):
@@ -242,10 +242,10 @@ def part3():
     print("Number of Carell in validation set: " + str((np.shape(np.where(validation[:,-1]==1))[1])))
     print("Number of Carell in test set: " + str((np.shape(np.where(test[:,-1]==1))[1])))
     theta0 = np.ones((1025,))
-    #theta0 = np.random.normal(0,0.2,1025)
-    
+
     training_labels = training[:,-1]
     training = np.transpose(training[:,:-1])
+    print(training.shape)
     theta = grad_descent(f,df,training,training_labels,theta0,0.00001,10000)
 
     #Training hypothesis
@@ -530,22 +530,39 @@ def part6():
 
 def part7():
     #Rough attempt at classification
-    act =['Alec Baldwin', 'Bill Hader', 'Steve Carell']
-    #x = getDataMatrix(act, 5)
-    #print(x.shape)
-    y = getMultipleDataLabels(act,5)
-    print(y)
+    act = ['Alec Baldwin', 'Steve Carell']
+    x = getDataMatrix(act, 3)
+    print("Data matrix shape is: ")
+    print(x.shape)
+    y = getMultipleDataLabels(act,3)
+    y = np.transpose(y)
+    print("Label shape is: ")
+    print(y.shape)
+    
+    complete = np.column_stack((x,y))
+    np.random.shuffle(complete)
+    training = complete[:,200]
+    training_labels = complete[:,-y.shape[1]:]
+    #print(training_labels)
+    print(training_labels.shape)
+    #print(complete)
+    print(complete.shape)
+    theta0 = np.ones((1025,y.shape[1]))
+    print(theta0.shape)
+    training = np.transpose(complete[:,:-y.shape[1]])
+    print("training set size is:")
+    print(training.shape)
+    theta = grad_descent(f2,df2,training,training_labels,theta0,0.00001,10000)
+
+
 
     
-
-
-
 def main():
-    #theta = part3()
+    theta = part3()
     #part4a(theta)
     #part5()
     #part6()
-    part7()
+    #part7()
 
 
 
