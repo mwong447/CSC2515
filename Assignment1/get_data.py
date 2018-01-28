@@ -553,32 +553,41 @@ def part6():
     print("Gradient is:")
     print(df2(x,y,theta)[10,1])
     
-
-
 def part7():
-    #Rough attempt at classification
+    ##################### Data Pre-processing ##########################################################
     act =['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
     x = getDataMatrix(act, 5)
     x = np.transpose(x)
     y = getMultipleDataLabels(act,5)
-    print("Output guess shape:")
-    print(y.shape)
     complete = np.vstack((x,y))
-    
     np.random.shuffle(complete.T)
+    ##################### Shuffling around the training data ############################################
     training = complete[:,0:600]
-    print("After shuffling complete data matrix:")
-    print(training.shape)
     validation = complete[:,601:691]
     theta0 = np.random.normal(0, 0.2,(1025,y.shape[0]))
+    #Splicing the training data and training labels after shuffling
     training_labels = complete[-y.shape[0]:, 0:600]
-    print("Training label size:")
-    print(training_labels.shape)
+    print("Number of Baldwin in training set:" + str(np.sum(training_labels[0,:],axis=0)))
+    print("Number of Bracco in training set:" + str(np.sum(training_labels[1,:],axis=0)))
+    print("Number of Carell in training set:" + str(np.sum(training_labels[2,:],axis=0)))
+    print("Number of Gilpin in training set:" + str(np.sum(training_labels[3,:],axis=0)))
+    print("Number of Hader in training set:" + str(np.sum(training_labels[4,:],axis=0)))
+    print("Number of Harmon in training set:" + str(np.sum(training_labels[5,:],axis=0)))
     training = training[:-training_labels.shape[0]]
-    print("After splicing")
-    print(training.shape)
-    theta = grad_descent(f2,df2,training,training_labels,theta0,0.000005,10000)
 
+    validation_labels = complete[-y.shape[0]:, 601:691]
+    validation = validation[:-validation_labels.shape[0]]
+    print("Number of Baldwin in validation set:" + str(np.sum(validation_labels[0,:],axis=0)))
+    print("Number of Bracco in validation set:" + str(np.sum(validation_labels[1,:],axis=0)))
+    print("Number of Carell in validation set:" + str(np.sum(validation_labels[2,:],axis=0)))
+    print("Number of Gilpin in validation set:" + str(np.sum(validation_labels[3,:],axis=0)))
+    print("Number of Hader in validation set:" + str(np.sum(validation_labels[4,:],axis=0)))
+    print("Number of Harmon in validation set:" + str(np.sum(validation_labels[5,:],axis=0)))
+
+    theta = grad_descent(f2,df2,training,training_labels,theta0,0.0000053,7000)
+    
+    ###########################################################################
+    #Training hypothesis
     ones_t = np.ones((1,training.shape[1]))
     training_with_bias = vstack((ones_t,training))
     training_hypothesis = np.matmul(theta.T,training_with_bias)
@@ -592,70 +601,50 @@ def part7():
         training_hypothesis_labels[index,i]=1
         i+=1
 
-    print(training_hypothesis_labels)
-    print(training_labels)
-    '''
     correct = 0
     i = 0
         
     while i < training_hypothesis_labels.shape[1]:
-        if np.array_equal(training_hypothesis[:,i],training_labels[:,i]) == True:
-            correct +=1
+        if np.array_equal(training_hypothesis_labels[:,i],training_labels[:,i]) is True:
+            correct += 1
         i+=1
-    print(correct)
-    '''
+    print("Training accuracy is: " + str(correct/600.0))
     
-    '''
-    complete = np.column_stack((x,y))
-    np.random.shuffle(complete)
-    training = complete[:,200]
-    validation = complete[200:230,:]
-    test = complete[230:260,:]
-    training = np.transpose(complete[:,:-y.shape[1]])
-    print(training.shape)
-    training_labels = complete[:,-y.shape[1]:]
-    theta0 = np.ones((1025,y.shape[1]))
-       
-    #Training thetas:
-    theta = grad_descent(f2,df2,training,training_labels,theta0,0.00001,1)
-
-    ones_t = np.ones((1,training.shape[1]))
-    training_with_bias = vstack((ones_t,training))
-    training_hypothesis = np.matmul(theta.T,training_with_bias)
-    max = training_hypothesis.argmax(axis=0)
-    max = np.array(max)
-    new = np.zeros((y.shape[1],training.shape[1]))
-    i = 0
-    while i < new.shape[1]:
-        index = max[i]
-        new[index,i]=1
-        i+=1
-    training_hypothesis = new
-    print(training_hypothesis)
-    print(np.sum(np.equal(training_hypothesis,training_labels.T)))
-    '''
-
-    
-    
-    
-    '''
     #Validation hypothesis
-    validation_labels = validation[:,-1]
-    validation = np.transpose(validation[:,:-1])
+    
     ones_v = np.ones((1,validation.shape[1]))
     validation_with_bias = vstack((ones_v,validation))
-    validation_hypothesis = np.dot(theta.T,validation_with_bias)
-    i=0
-    while i < validation_hypothesis.shape[0]:
-        if validation_hypothesis[i] > 0.5:
-            validation_hypothesis[i] = 1
-        else:
-            validation_hypothesis[i] = 0
+    validation_hypothesis = np.matmul(theta.T,validation_with_bias)
+    max = validation_hypothesis.argmax(axis=0)
+    max = np.array(max)
+    validation_hypothesis_labels = np.zeros((validation_hypothesis.shape))
+    i = 0
+    while i < validation_hypothesis_labels.shape[1]:
+        index = max[i]
+        validation_hypothesis_labels[index,i]=1
         i+=1
-
-    print("Accuracy percentage in validation set:" + str(np.sum(np.equal(validation_hypothesis,validation_labels))/30.0))
-    '''
-
+    
+    correct = 0
+    i = 0
+        
+    while i < validation_hypothesis_labels.shape[1]:
+        if np.array_equal(validation_hypothesis_labels[:,i],validation_labels[:,i]) is True:
+            correct += 1
+        i+=1
+    print("Validation accuracy is: " + str(correct/90.0))
+    print(theta.shape)
+    return theta
+ 
+def part8(theta):
+    theta = np.transpose(theta)
+    theta = theta[:,1:]
+    i = 0
+    while i < theta.shape[0]:
+        sub_theta = np.reshape(theta[i,:],(32,32))
+        plt.imsave("thetas" + str(i) + ".jpg",sub_theta,cmap='RdBu')
+        i+=1
+    
+    
 
     
 def main():
@@ -663,7 +652,8 @@ def main():
     #part4a(theta)
     #part5()
     #part6()
-    part7()
+    theta = part7()
+    part8(theta)
 
 
 
