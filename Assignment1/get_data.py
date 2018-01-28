@@ -137,16 +137,17 @@ def f2(x,y,theta):
     ones = np.ones((1,x.shape[1]))
     x = np.vstack((ones,x))
     hypothesis = np.matmul(theta.T,x)
-    loss = np.power((np.transpose(hypothesis)-y),2)
+    loss = np.power((hypothesis-y),2)
     return np.sum(loss)
 
 def df2(x,y,theta):
     ones = np.ones((1,x.shape[1]))
-    x = np.vstack((ones,x))
-    hypothesis = np.matmul(theta.T,x)
-    loss = y-np.transpose(hypothesis)
-    gradient = -2*np.matmul(x,loss)
+    x = vstack((ones,x))
+    hypothesis = np.matmul(np.transpose(theta),x)-y
+    hypothesis = np.transpose(hypothesis)
+    gradient = 2*np.matmul(x,hypothesis)
     return gradient
+
 
 def label(x):
     label = flattenData(x)
@@ -208,7 +209,6 @@ def getMultipleDataLabels(act, partNumber):
                 i+=1
         k+=1
     return y
-
 
 def getFileList(directory):
     for file in os.listdir(directory):
@@ -517,52 +517,153 @@ def part5():
 
 def part6():
     #Testing the loss function
-    theta = np.array([[1,1],[4,3],[6,5]])
-    x = np.array([[3,9],[1,2]])
-    y = np.array([[1,0],[0,1]])
-    print(theta)
-    print(theta.shape)
-    print(x)
-    print(x.shape)
-    print(y)
-    print(y.shape)
-    print(f2(x,y,theta))
+    x = np.random.normal(0,0.6,(20,15))
+    y = np.random.normal(0.2,0.4,(5,15))
+    theta = np.random.normal(-0.1,0.3,(21,5))
+    h = 0.00001
+    #Cost of individual component
+    testarr1 = np.zeros(theta.shape)
+    testarr1[3,4] = h
+    print("Cost is:")
+    print((f2(x,y,theta+testarr1)-f2(x,y,theta-testarr1))/(2*h))
+    print("Gradient is:")
+    print(df2(x,y,theta)[3,4])
+    testarr2 = np.zeros(theta.shape)
+    testarr2[1,4] = h
+    print("Cost is:")
+    print((f2(x,y,theta+testarr2)-f2(x,y,theta-testarr2))/(2*h))
+    print("Gradient is:")
+    print(df2(x,y,theta)[1,4])
+    testarr3 = np.zeros(theta.shape)
+    testarr3[2,3] = h
+    print("Cost is:")
+    print((f2(x,y,theta+testarr3)-f2(x,y,theta-testarr3))/(2*h))
+    print("Gradient is:")
+    print(df2(x,y,theta)[2,3])
+    testarr4 = np.zeros(theta.shape)
+    testarr4[8,4] = h
+    print("Cost is:")
+    print((f2(x,y,theta+testarr4)-f2(x,y,theta-testarr4))/(2*h))
+    print("Gradient is:")
+    print(df2(x,y,theta)[8,4])
+    testarr5 = np.zeros(theta.shape)
+    testarr5[10,1] = h
+    print("Cost is:")
+    print((f2(x,y,theta+testarr5)-f2(x,y,theta-testarr5))/(2*h))
+    print("Gradient is:")
+    print(df2(x,y,theta)[10,1])
+    
+
 
 def part7():
     #Rough attempt at classification
-    act = ['Alec Baldwin', 'Steve Carell']
-    x = getDataMatrix(act, 3)
-    print("Data matrix shape is: ")
-    print(x.shape)
-    y = getMultipleDataLabels(act,3)
-    y = np.transpose(y)
-    print("Label shape is: ")
+    act =['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
+    x = getDataMatrix(act, 5)
+    x = np.transpose(x)
+    y = getMultipleDataLabels(act,5)
+    print("Output guess shape:")
     print(y.shape)
+    complete = np.vstack((x,y))
     
+    np.random.shuffle(complete.T)
+    training = complete[:,0:600]
+    print("After shuffling complete data matrix:")
+    print(training.shape)
+    validation = complete[:,601:691]
+    theta0 = np.random.normal(0, 0.2,(1025,y.shape[0]))
+    training_labels = complete[-y.shape[0]:, 0:600]
+    print("Training label size:")
+    print(training_labels.shape)
+    training = training[:-training_labels.shape[0]]
+    print("After splicing")
+    print(training.shape)
+    theta = grad_descent(f2,df2,training,training_labels,theta0,0.000005,10000)
+
+    ones_t = np.ones((1,training.shape[1]))
+    training_with_bias = vstack((ones_t,training))
+    training_hypothesis = np.matmul(theta.T,training_with_bias)
+    max = training_hypothesis.argmax(axis=0)
+    max = np.array(max)
+    training_hypothesis_labels = np.zeros((training_hypothesis.shape))
+    print(training_hypothesis_labels.shape)
+    i = 0
+    while i < training_hypothesis_labels.shape[1]:
+        index = max[i]
+        training_hypothesis_labels[index,i]=1
+        i+=1
+
+    print(training_hypothesis_labels)
+    print(training_labels)
+    '''
+    correct = 0
+    i = 0
+        
+    while i < training_hypothesis_labels.shape[1]:
+        if np.array_equal(training_hypothesis[:,i],training_labels[:,i]) == True:
+            correct +=1
+        i+=1
+    print(correct)
+    '''
+    
+    '''
     complete = np.column_stack((x,y))
     np.random.shuffle(complete)
     training = complete[:,200]
-    training_labels = complete[:,-y.shape[1]:]
-    #print(training_labels)
-    print(training_labels.shape)
-    #print(complete)
-    print(complete.shape)
-    theta0 = np.ones((1025,y.shape[1]))
-    print(theta0.shape)
+    validation = complete[200:230,:]
+    test = complete[230:260,:]
     training = np.transpose(complete[:,:-y.shape[1]])
-    print("training set size is:")
     print(training.shape)
-    theta = grad_descent(f2,df2,training,training_labels,theta0,0.00001,10000)
+    training_labels = complete[:,-y.shape[1]:]
+    theta0 = np.ones((1025,y.shape[1]))
+       
+    #Training thetas:
+    theta = grad_descent(f2,df2,training,training_labels,theta0,0.00001,1)
 
+    ones_t = np.ones((1,training.shape[1]))
+    training_with_bias = vstack((ones_t,training))
+    training_hypothesis = np.matmul(theta.T,training_with_bias)
+    max = training_hypothesis.argmax(axis=0)
+    max = np.array(max)
+    new = np.zeros((y.shape[1],training.shape[1]))
+    i = 0
+    while i < new.shape[1]:
+        index = max[i]
+        new[index,i]=1
+        i+=1
+    training_hypothesis = new
+    print(training_hypothesis)
+    print(np.sum(np.equal(training_hypothesis,training_labels.T)))
+    '''
+
+    
+    
+    
+    '''
+    #Validation hypothesis
+    validation_labels = validation[:,-1]
+    validation = np.transpose(validation[:,:-1])
+    ones_v = np.ones((1,validation.shape[1]))
+    validation_with_bias = vstack((ones_v,validation))
+    validation_hypothesis = np.dot(theta.T,validation_with_bias)
+    i=0
+    while i < validation_hypothesis.shape[0]:
+        if validation_hypothesis[i] > 0.5:
+            validation_hypothesis[i] = 1
+        else:
+            validation_hypothesis[i] = 0
+        i+=1
+
+    print("Accuracy percentage in validation set:" + str(np.sum(np.equal(validation_hypothesis,validation_labels))/30.0))
+    '''
 
 
     
 def main():
-    theta = part3()
+    #theta = part3()
     #part4a(theta)
     #part5()
     #part6()
-    #part7()
+    part7()
 
 
 
