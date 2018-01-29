@@ -176,7 +176,6 @@ def getDataLabels(act,partNumber):
     y = []
     for a in act:
         name = a.split()[1].lower()
-        print(name)
         for file in os.listdir(directory):
             filename = str(file)
             if name in filename:
@@ -306,8 +305,6 @@ def part4a(theta):
     plt.imsave("complete_thetas.jpg",test,cmap='RdBu')
     
     
-    
-
     #Outputting thetas for training set of 2 images from both sets
     #Declare list of actors for processing
     act = ['Alec Baldwin', 'Steve Carell']
@@ -418,29 +415,7 @@ def part4a(theta):
     theta = grad_descent(f,df,training,training_labels,theta0,0.00001,2500)
     theta = theta[1:]
     test = np.reshape(theta,(32,32))
-    plt.imsave('two_actor_thetas__lognorm_2500_iterations.jpg',test,cmap='RdBu')
 
-
-    '''
-    theta = grad_descent(f,df,small_train,small_train_labels,theta0,0.001,10000)
-    theta = theta[1:]
-    print(theta.shape)
-    test = np.reshape(theta,(32,32))
-    imsave('two_actor_thetas_learning_rate0.jpg',cmap='RdBu')
-    print(test.shape)
-    plt.imshow(test,cmap='RdBu')
-    plt.show()
-
-    theta0 = np.ones((1025,))
-    theta = grad_descent(f,df,small_train,small_train_labels,theta0,0.001,10000)
-    theta = theta[1:]
-    print(theta.shape)
-    test = np.reshape(theta,(32,32))
-    imsave('two_actor_thetas_learning_rate0.jpg',cmap='RdBu')
-    print(test.shape)
-    plt.imshow(test,cmap='RdBu')
-    plt.show()
-    '''
 
 def part5():
     
@@ -449,13 +424,16 @@ def part5():
     Code for Part 5 of the assignment - proceeds by getting cropped images of both Alec Baldwin and Steve Carell.
     '''
     #############################################################################################################
-        
+    act = ['Daniel Radcliffe','Gerard Butler','Michael Vartan']
+    getCroppedData(act, "facescrub_actors.txt",str(5)+'a')
+    act = ['Kristin Chenoweth','Fran Drescher','America Ferrera']
+    getCroppedData(act, "facescrub_actresses.txt",str(5)+'a')
     act =['Alec Baldwin', 'Bill Hader', 'Steve Carell']
     getCroppedData(act,"facescrub_actors.txt",5)
     act =['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon']
     getCroppedData(act, "facescrub_actresses.txt",5)
     act =['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
-    x = getDataMatrix(act, 5)
+    x = getDataMatrix(act,5)
     y = getDataLabels(act,5)
     i = 0
     #Cleaning up data matrix for classification - 0 is female, 1 is male
@@ -470,50 +448,89 @@ def part5():
     np.random.seed(1)
     np.random.shuffle(complete)
 
-    i = 50
-    while i < 601:
+    #i = 50
+    #while i < 601:
         #Using the full set of training data
-        training = complete[0:i,:]
-        validation = complete[i+1:i+int(i*0.8),:]
-        print("Number of Females in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
-        print("Number of Males in training set: " + str((np.shape(np.where(training[:,-1]==1))[1])))
-        print("Number of Females in validation set: " + str((np.shape(np.where(validation[:,-1]==0))[1])))
-        print("Number of Males in validation set: " + str((np.shape(np.where(validation[:,-1]==1))[1])))
+    '''
+    training = complete[0:i,:]
+    validation = complete[i+1:i+int(i*0.8),:]
+    '''
+    training = complete[0:600,:]
+    validation = complete[601:691,:]
+    print("Number of Females in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
+    print("Number of Males in training set: " + str((np.shape(np.where(training[:,-1]==1))[1])))
+    print("Number of Females in validation set: " + str((np.shape(np.where(validation[:,-1]==0))[1])))
+    print("Number of Males in validation set: " + str((np.shape(np.where(validation[:,-1]==1))[1])))
         
-        theta0 = np.ones((1025,))
-        training_labels = training[:,-1]
-        training = np.transpose(training[:,:-1])
-        theta1 = grad_descent(f,df,training,training_labels,theta0,0.000001,10000)
+    theta0 = np.ones((1025,))
+    training_labels = training[:,-1]
+    training = np.transpose(training[:,:-1])
+    theta1 = grad_descent(f,df,training,training_labels,theta0,0.000001,10000)
 
-        #Training hypothesis
-        ones_t = np.ones((1,training.shape[1]))
-        training_with_bias = vstack((ones_t,training))
-        training_hypothesis = np.dot(theta1.T,training_with_bias)
-        j = 0
-        while j < training_hypothesis.shape[0]:
-            if training_hypothesis[j] > 0.5:
-                training_hypothesis[j] = 1
-            else:
-                training_hypothesis[j] = 0
-            j+=1
+    #Training hypothesis
+    ones_t = np.ones((1,training.shape[1]))
+    training_with_bias = vstack((ones_t,training))
+    training_hypothesis = np.dot(theta1.T,training_with_bias)
+    j = 0
+    while j < training_hypothesis.shape[0]:
+        if training_hypothesis[j] > 0.5:
+            training_hypothesis[j] = 1
+        else:
+            training_hypothesis[j] = 0
+        j+=1
     
-        print("Accuracy percentage in training set:" + str(np.sum(np.equal(training_hypothesis,training_labels))/float(i)))
+    print("Accuracy percentage in training set:" + str(np.sum(np.equal(training_hypothesis,training_labels))/float(600)))
     
-        validation_labels = validation[:,-1]
-        validation = np.transpose(validation[:,:-1])
-        ones_v = np.ones((1,validation.shape[1]))
-        validation_with_bias = vstack((ones_v,validation))
-        validation_hypothesis = np.dot(theta1.T,validation_with_bias)
-        j = 0
-        while j < validation_hypothesis.shape[0]:
-            if validation_hypothesis[j] > 0.5:
-                validation_hypothesis[j] = 1
-            else:
-                validation_hypothesis[j] = 0
-            j+=1
+    validation_labels = validation[:,-1]
+    validation = np.transpose(validation[:,:-1])
+    ones_v = np.ones((1,validation.shape[1]))
+    validation_with_bias = vstack((ones_v,validation))
+    validation_hypothesis = np.dot(theta1.T,validation_with_bias)
+    j = 0
+    while j < validation_hypothesis.shape[0]:
+        if validation_hypothesis[j] > 0.5:
+            validation_hypothesis[j] = 1
+        else:
+            validation_hypothesis[j] = 0
+        j+=1
 
-        print("Accuracy percentage in validation set: " + str(np.sum(np.equal(validation,validation_labels))/(float(i*0.8))))
-        i+=50
+    print("Accuracy percentage in validation set: " + str(np.sum(np.equal(validation_hypothesis,validation_labels))/(float(90))))
+        #i+=50
+
+    act = ['Kristin Chenoweth', 'Fran Dresche', 'America Ferrera','Daniel Radcliffe','Gerard Butler','Michael Vartan']
+    x2 = getDataMatrix(act,str(5)+'a')
+    y2 = getDataLabels(act,str(5)+'a')
+    print(y2.shape)
+    print(y2)
+    i = 0
+    #Cleaning up data matrix for classification - 0 is female, 1 is male
+    while i < y2.shape[0]:
+        if y2[i] < 3:
+            y2[i] = 0
+        else:
+            y2[i] = 1
+        i+=1
+
+    complete2 = np.column_stack((x2,y2))
+    
+
+    print("Number of Females in Unseen set: " + str((np.shape(np.where(complete2[:,-1]==0))[1])))
+    print("Number of Males in Unseen set: " + str((np.shape(np.where(complete2[:,-1]==1))[1])))
+    ones_u = np.ones((1025,))
+    complete2 = vstack((ones_u,complete2))
+    hypothesis_u = np.dot(theta1.T,complete2.T)
+    j = 0
+    while j < hypothesis_u.shape[0]:
+        if hypothesis_u[j] > 0.5:
+            hypothesis_u[j] = 1
+        else:
+            hypothesis_u[j] = 0
+        j+=1
+    hypothesis_u = hypothesis_u[1:]
+    print(hypothesis_u.shape)
+    print("Accuracy percentage in Unseen set: " + str(np.sum(np.equal(hypothesis_u,y2))/float(hypothesis_u.shape[0])))
+
+
 
 def part6():
     #Testing the loss function
@@ -650,10 +667,10 @@ def part8(theta):
 def main():
     #theta = part3()
     #part4a(theta)
-    #part5()
+    part5()
     #part6()
-    theta = part7()
-    part8(theta)
+    #theta = part7()
+    #part8(theta)
 
 
 
