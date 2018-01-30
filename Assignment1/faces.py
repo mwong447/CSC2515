@@ -680,12 +680,12 @@ def part8(theta):
     
 def main():
 
-    #getRawData("facescrub_actors.txt",3)
-    #getRawData("facescrub_actresses.txt",3)
-    #theta = part3()
-    #part4a(theta)
-    #part5()
-    #part6()
+    getRawData("facescrub_actors.txt",3)
+    getRawData("facescrub_actresses.txt",3)
+    theta = part3()
+    part4a(theta)
+    part5()
+    part6()
     theta = part7()
     part8(theta)
 
