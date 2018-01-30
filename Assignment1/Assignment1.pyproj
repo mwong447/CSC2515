@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>314dfc95-ca47-4ce8-a6d7-d9a450f2deac</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>get_data.py</StartupFile>
+    <StartupFile>faces.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -23,7 +23,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Assignment1.py" />
-    <Compile Include="get_data.py">
+    <Compile Include="faces.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

@@ -37,6 +37,8 @@
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{amsmath}
+\usepackage{enumerate}
+\usepackage{soul}
 %Code for including Python code in Latex - outlined on the Piazza forum post, taken from Stackoverflow
 
 \usepackage{enumitem}
@@ -69,6 +71,10 @@
 \textwidth=6.5in
 \textheight=9.0in
 \headsep=0.25in
+
+% Paragraph spacing
+\setlength{\parskip}{10pt}
+
 
 \linespread{1.1} % Line spacing
 
@@ -207,7 +213,10 @@
 
 \noindent \textit{Introductory information and readme instructions}
 
-Attached, you will find the required submissions \textit{faces.py, faces.tex \& faces.pdf} in addition to the various folders of uncropped and cropped images.  Comments about the code are located in the \textit{faces.py} file and the code is separated out by function and can be run as necessary from a command line argument.  Outside of the function definitions for data retrieval, cleansing and storage, code for each section is labelled appropriately and can be run without internal dependencies.  Code was written in Python 3.5 - the packages used are outlined in the file header.
+Attached, you will find the required submissions \textit{faces.py, faces.tex \& faces.pdf} in addition to the various folders of uncropped and cropped images.  Comments about the code are located in the \textit{faces.py} file and the code is separated out by function and can be run as necessary from a command line argument.  Outside of the function definitions for data retrieval, cleansing and storage, code for each section is labelled appropriately and can be run without internal dependencies.  Code was written in Python 3.5 - the packages used are outlined at the beginning of the file.
+
+\textbf{Additional Information}:  Due to time limitations, I was unable to put all of the cropped/uncropped folders into separate directories - instead, you will find these directories with a number appended (in most cases to highlight which question was attempted).  For compilation purposes, the images that are saved as a result of code exeuction must be included in the same directory as the .tex file.
+
 
 \end{homeworkProblem}
 \clearpage
@@ -221,11 +230,37 @@ Attached, you will find the required submissions \textit{faces.py, faces.tex \& 
 
 \noindent \textit{Dataset description}
 
-The dataset consists of $2359$ grayscale $25\times 25$-pixel of images of the letter ``a," rendered using various fonts. The letter appears in both uppercase and lowercase, and there is considerable variation in the appearance of the letters. However, examining the dataset, it appears that there are more print letters than letters in other fonts, and most of the letters are lowercase. A random sample of $25$ ``a"s is shown in Figure~\ref{fig:randim}.
-
-
-
-\textit{Advice: when describing a dataset, give a general description, and mention the things that would be important for a person who is working on the same problem that you are working on.}
+The uncropped dataset contains approximately 1500 images of 12 actors and actresses of varying shapes, sizes and colours.  The various cropped dataset folders contain cropped $32 \times 32$, greyscale images that are relevant to that part outlined in the assignment specification.  The cropped images were obtained by crawling through the FaceScrub dataset and applying the bounding boxes located those files.  Overall, they seem to be accurate.  There are numerous objectives in this assignment that pertain to this dataset - but in particular, the objective was the development of a linear regression classifier using Gradient Descent to distinguish between males and females as well as categorizing individual actors and actresses.  The main data source to accomplish this task will be the greyscale pixel intensities of the cropped images.  A few of the uncropped and cropped images of various actors will be shown below.
+\begin{center}
+\begin{figure}[!ht]\centering
+\begin{subfigure}{.3\textwidth}\centering
+  \includegraphics[width=.3\linewidth]{raw_baldwin2.jpg}
+  \caption{Baldwin}
+\end{subfigure}
+\begin{subfigure}{.3\textwidth}\centering
+  \includegraphics[width=.3\linewidth]{raw_drescher0.jpg}
+  \caption{Drescher}
+\end{subfigure}
+\begin{subfigure}{.3\textwidth}\centering
+  \includegraphics[width=.3\linewidth]{raw_hader0.jpg}
+  \caption{Hader}
+\end{subfigure}
+\begin{subfigure}{.3\textwidth}\centering
+  \includegraphics[width=.3\linewidth]{baldwin2.jpg}
+  \caption{Cropped Baldwin}
+\end{subfigure}
+\begin{subfigure}{.3\textwidth}\centering
+  \includegraphics[width=.3\linewidth]{drescher0.jpg}
+  \caption{Cropped Drescher}
+\end{subfigure}
+\begin{subfigure}{.3\textwidth}\centering
+  \includegraphics[width=.3\linewidth]{hader0.jpg}
+  \caption{Cropped Hader}
+\end{subfigure}
+\caption{Cropped and Uncropped sample images}
+\end{figure}
+\end{center}
+Based on additional images from the dataset, it can stated that some actors' and actresses' faces are sometimes not directly facing the camera - hence, a superposition of the images for each actor may not be representative of their face.  Furthermore, a linear regression classifier may not be the best use case here - a logistic regression or the implementation of a convolution neural network would be more appropriate to handle rotated actors' and actresses' faces.
 
 \end{homeworkProblem}
 \clearpage
@@ -236,9 +271,21 @@ The dataset consists of $2359$ grayscale $25\times 25$-pixel of images of the le
 \begin{homeworkProblem}
 \noindent \textit{Splitting up the Data.}
 
-The algorithm that was used to shuffle the dataset originated from the \textit{numpy.random} library.
+\par The algorithm that was used to shuffle the dataset originated from the \textit{numpy.random} library.  The \textit{random.seed()} command was used and different seeds set in order to get the best results for training and validation in addition to allowing for reproducible results.  A detailed explanation of this command can be located on the official Numpy documentation.
 
+For parts 3, 4, and 5, the data was flattened into rows of 1024 pixels.  The label (either Carell vs.  Baldwin or Male vs. Female) was appended to the last column.  The entire data matrix was shuffled using \textit{numpy.random.shuffle} after using the \textit{numpy.random.seed()} command.  The last column from the resultant matrix was separated from the column.  The new matrix, with the shuffled rows was then used for classification
 
+Parts 7 and 8 used a different scheme and the matrix geometry taken from the assignment specification.  The data matrix and data labels were obtained separately.  The labels were then stacked below the data matrix to form a complete matrix.  This matrix was also shuffled using \textit{numpy.random.shuffle}, the last $k$ rows (e.g. $k$=6) were extracted to form the labels and the number of columns was selected appropriately for the training and validation sets (e.g. 600 and 90 - approximately 100 and 15 for training and validation respectively.)
+
+\textbf{Post-Mortem Addendum/Future Changes}:  In retrospect, it would have been preferable to write a function to randomly select, based on actor name, directory, and number of files to generate the appropriate data matrix and label matrix.  Unfortunately, due to time constraints, the $os.listdir()$ command was used to traverse through a directory, and based on experimentation, it appears to do so alphabetically.  The workflow would have been the following:
+\begin{enumerate}
+\item Specify number of training, validation, and test set sizes.
+\item Specify directory containing the cropped images
+\item Specify which actors to look up
+\item Obtain data and label matrices for each actor individually
+\item Concatenate the matrices vertically, then shuffle
+\end{enumerate}
+By implementing the above method, a more accurate training, validation, and test set would have been acquired for each of the tasks, potentially resulting in results more aligned with the instructor/TA code.
 
 \end{homeworkProblem}
 \clearpage
@@ -256,40 +303,9 @@ As outlined in the assignment documentation, linear regression was used to creat
 $J(\theta)=\sum_{i=1}^{n}(h_{\theta}(x^{(i)}-y^{(i)})^2$
 \end{center}
 
-Using the Gradient-Descent algorithm, a training accuracy of 100\% was obtained on the training data compared to a validation accuracy of 83\%.  The following code was used to implement the binary classifier.
+Using the Gradient-Descent algorithm, a training accuracy of 100\% was obtained on the training data compared to a validation accuracy of 83\%.  The following code was used to output the results of the hypothesis from the binary classifier.
 \begin{lstlisting}
-//part3 function call within faces.py
-  #Declare list of actors for processing
-    act = ['Alec Baldwin', 'Steve Carell']
-    getCroppedData(act,"facescrub_actors.txt",3)
-    x = getDataMatrix(3)
-    y = getDataLabels(act,3)
-    
-    #concatenate the data matrix and labels for processing
-    
-    complete = np.column_stack((x,y))
-    np.random.seed(4)
-    np.random.shuffle(complete)
-    training = complete[0:200,:]
-    validation = complete[200:230,:]
-    test = complete[230:260,:]
-    print("Number of Baldwin in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
-    print("Number of Baldwin in validation set: " + str((np.shape(np.where(validation[:,-1]==0))[1])))
-    print("Number of Baldwin in test set: " + str((np.shape(np.where(test[:,-1]==0))[1])))
-    print("Number of Carell in training set: " + str((np.shape(np.where(training[:,-1]==1))[1])))
-    print("Number of Carell in validation set: " + str((np.shape(np.where(validation[:,-1]==1))[1])))
-    print("Number of Carell in test set: " + str((np.shape(np.where(test[:,-1]==1))[1])))
-    theta0 = np.ones((1025,))
-    #theta0 = np.random.normal(0,0.2,1025)
-    
-    training_labels = training[:,-1]
-    training = np.transpose(training[:,:-1])
-    theta = grad_descent(f,df,training,training_labels,theta0,0.00001,10000)
-
-    #Training hypothesis
-    ones_t = np.ones((1,training.shape[1]))
-    training_with_bias = vstack((ones_t,training))
-    training_hypothesis = np.dot(theta.T,training_with_bias)
+#Input - the training_hypothesis matrix, of shape m x 1, where m is the number of examples
     i = 0
     while i < training_hypothesis.shape[0]:
         if training_hypothesis[i] > 0.5:
@@ -297,42 +313,9 @@ Using the Gradient-Descent algorithm, a training accuracy of 100\% was obtained 
         else:
             training_hypothesis[i] = 0
         i+=1
-    print("Accuracy percentage in training set:" + str(np.sum(np.equal(training_hypothesis,training_labels))/200.0))
-
-    #Validation hypothesis
-    validation_labels = validation[:,-1]
-    validation = np.transpose(validation[:,:-1])
-    ones_v = np.ones((1,validation.shape[1]))
-    validation_with_bias = vstack((ones_v,validation))
-    validation_hypothesis = np.dot(theta.T,validation_with_bias)
-    i=0
-    while i < validation_hypothesis.shape[0]:
-        if validation_hypothesis[i] > 0.5:
-            validation_hypothesis[i] = 1
-        else:
-            validation_hypothesis[i] = 0
-        i+=1
-
-    print("Accuracy percentage in validation set:" + str(np.sum(np.equal(validation_hypothesis,validation_labels))/30.0))
-
-    test_labels = test[:,-1]
-    test = np.transpose(test[:,:-1])
-    ones_test = np.ones((1,test.shape[1]))
-    test_with_bias = vstack((ones_test,test))
-    test_hypothesis = np.dot(theta.T,test_with_bias)
-    i=0
-    while i < test_hypothesis.shape[0]:
-        if test_hypothesis[i] > 0.5:
-            test_hypothesis[i] = 1
-        else:
-            test_hypothesis[i] = 0
-        i+=1
-
-    print("Accuracy percentage in test set:" + str(np.sum(np.equal(test_hypothesis,test_labels))/30.0))
-    return theta
 \end{lstlisting}
 
-The Gradident Descent algorithm was modified for the purposes for this assignment was taken from the Galaxy code posted on the CSC2515 website.  In order to get the system to work, a suitable number of maximum iterations was performed, in addition to modifying the learning rate, $\alpha$.  I did not formalize my selection of the two parameters, but tried experimenting with different values.  I noticed that as $\alpha$ was increased by a factor of 10 (e.g. $10^{-4}$), there were errors in the matrix operations being performed, resulting in numerical overflow issues.  As $\alpha$ decreased, (e.g. $10^{-6}$) it was observed that both the training and validation sets exhibited lower accuracy in correctly identifying the individuals - perhaps indicating a local minimum.  However, this could certainly be investigated by modifying the number of maximum iterations (but in the cases mentioned, testing was completed on 10000 iterations).
+The Gradident Descent algorithm was modified for the purposes for this assignment was taken from the Galaxy code posted on the CSC2515 website.  In order to get the system to work, a suitable number of maximum iterations was performed, in addition to modifying the learning rate, $\alpha$.  I did not formalize my selection of the two parameters, but tried experimenting with different values.  I noticed that as $\alpha$ was increased by a factor of 10 (e.g. $10^{-4}$), there were errors in the matrix operations being performed, resulting in numerical overflow issues.  As $\alpha$ decreased, (e.g. $10^{-6}$) it was observed that both the training and validation sets exhibited lower accuracy in correctly identifying the individuals - perhaps indicating a local minimum.  However, this could certainly be investigated by modifying the number of maximum iterations (but in the cases mentioned, testing was completed on 10000 iterations).  Furthermore, the above loop could further be optimized using a vectorization technique or by implementing one-hot initialization (e.g. as in the Tensorflow package).
 
 
 \end{homeworkProblem}
@@ -342,9 +325,93 @@ The Gradident Descent algorithm was modified for the purposes for this assignmen
 %----------------------------------------------------------------------------------------
 
 \begin{homeworkProblem}
-\noindent \textit{Splitting up the Data.}
+\noindent \textit{Visualizing Binary $\theta 's $}
+\begin{enumerate}[label=(\Alph*)]
+\item The two figures below show the visualized $\theta 's$ for training on the complete set of Baldwin and Carell and of two images respectively.
+\begin{center}
+\begin{figure}[!ht]\centering
+\begin{subfigure}[t]{.3\textwidth}\centering
+  \includegraphics[width=.3\linewidth]{complete_thetas.jpg}
+  \caption{$\theta 's$ with full training set.}
+\end{subfigure}%
+\begin{subfigure}[t]{.3\textwidth}\centering
+  \includegraphics[width=.3\linewidth]{two_actor_thetas.jpg}
+  \caption{$\theta 's$ with training size 2.}
+  \end{subfigure}%
+  \caption{Visualized $\theta 's$}
+\end{figure}
+\end{center}
 
-The algorithm that was used to shuffle the dataset originated from the \textit{numpy.random} library.
+\item Experiments were run by modifying both the initializations of $\theta$ and the number of iterations - however, it was noted that the experiments with an initialized $\theta$ matrix of 1's most closely resembled a face, indicating the the initialization of $\theta$ may be hindering the appearance of "face-like" $\theta$ values.
+
+\begin{center}
+\begin{figure}[!ht]
+\begin{subfigure}[t]{.25\textwidth}\centering
+  \includegraphics[width=0.35\linewidth]{two_actor_thetas__lognorm_2500_iterations.jpg}
+  \caption{2500 iterations}
+\end{subfigure}%
+\begin{subfigure}[t]{.25\textwidth}\centering
+  \includegraphics[width=.35\linewidth
+  ]{two_actor_thetas__lognorm_5000_iterations.jpg}
+    \caption{5000 iterations}
+  \end{subfigure}%
+  \begin{subfigure}[t]{.25\textwidth}\centering
+  \includegraphics[width=.35\linewidth]{two_actor_thetas__lognorm_7500_iterations.jpg}
+      \caption{7500 iterations}
+\end{subfigure}%
+\begin{subfigure}[t]{.25\textwidth}\centering
+  \includegraphics[width=.35\linewidth]{two_actor_thetas__lognorm_10000_iterations.jpg}
+      \caption{10000 iterations}
+  \end{subfigure}%
+  \caption{$\theta$'s after log-normal initialization of $\theta$ with $\mu$ = 0 and $\sigma$ = 0.2}
+\end{figure}
+\end{center}
+
+\begin{center}
+\begin{figure}[!ht]
+\begin{subfigure}[t]{.25\textwidth}\centering
+  \includegraphics[width=0.35\linewidth]{two_actor_thetas__norm_2500_iterations.jpg}
+  \caption{2500 iterations}
+\end{subfigure}%
+\begin{subfigure}[t]{.25\textwidth}\centering
+  \includegraphics[width=.35\linewidth
+  ]{two_actor_thetas__norm_5000_iterations.jpg}
+    \caption{5000 iterations}
+  \end{subfigure}%
+  \begin{subfigure}[t]{.25\textwidth}\centering
+  \includegraphics[width=.35\linewidth]{two_actor_thetas__norm_7500_iterations.jpg}
+      \caption{7500 iterations}
+\end{subfigure}%
+\begin{subfigure}[t]{.25\textwidth}\centering
+  \includegraphics[width=.35\linewidth]{two_actor_thetas__norm_10000_iterations.jpg}
+      \caption{10000 iterations}
+  \end{subfigure}%
+  \caption{$\theta$'s after Normal initialization of $\theta$ with $\mu$ = 0 and $\sigma$ = 0.2}
+\end{figure}
+\end{center}
+\begin{center}
+\begin{figure}[!ht]
+\begin{subfigure}[t]{.25\textwidth}\centering
+  \includegraphics[width=0.35\linewidth]{two_actor_thetas_ones_2500_iterations.jpg}
+  \caption{2500 iterations}
+\end{subfigure}%
+\begin{subfigure}[t]{.25\textwidth}\centering
+  \includegraphics[width=.35\linewidth
+  ]{two_actor_thetas_ones_5000_iterations.jpg}
+    \caption{5000 iterations}
+  \end{subfigure}%
+  \begin{subfigure}[t]{.25\textwidth}\centering
+  \includegraphics[width=.35\linewidth]{two_actor_thetas_ones_7500_iterations.jpg}
+      \caption{7500 iterations}
+\end{subfigure}%
+\begin{subfigure}[t]{.25\textwidth}\centering
+  \includegraphics[width=.35\linewidth]{two_actor_thetas_ones_10000_iterations.jpg}
+      \caption{10000 iterations}
+  \end{subfigure}%
+  \caption{$\theta$'s 1 initialization}
+\end{figure}
+\end{center}
+\end{enumerate}
 
 
 
@@ -356,9 +423,17 @@ The algorithm that was used to shuffle the dataset originated from the \textit{n
 %----------------------------------------------------------------------------------------
 
 \begin{homeworkProblem}
-\noindent \textit{Splitting up the Data.}
+\noindent \textit{Investigating overfitting}
 
-The algorithm that was used to shuffle the dataset originated from the \textit{numpy.random} library.
+The results from varying the training size on the training and validation accuracies are shown below.
+\begin{center}
+\begin{figure}[h]
+\includegraphics[scale=0.75, width=\linewidth]{Trainsize.jpg}
+\caption{Graph comparing size of training set size vs. training accuracy and validation in increments of 50 images}
+\label{fig:Trainsize}
+\end{figure}
+\end{center}
+A potential explanation for the results in the figure may be that the training and validation sets, when split amongst the individual actors, may be favouring some actors over others.  There is an intersection at 100 training examples, and it appears the the accuracy between the two sets is almost identical.  The fact that there is a large discrepancy between the accuracies between a training sample size of ~180 to ~300 (e.g. validation accuracy stays relatively constant) may reveal support for the above claim that actors are not being represented properly, presumably due to a lack of rigour in the splitting between data sets for the individual actors.  Upon testing on the other actors and actresses not included in $act$, the validation accuracy obtained was $69\%$.  As outlined in the \textbf{Post-Mortem Addendum} in Section 2, the selection of data from the images may also have played a role in this behaviour.
 
 \end{homeworkProblem}
 \clearpage
@@ -369,7 +444,6 @@ The algorithm that was used to shuffle the dataset originated from the \textit{n
 
 \begin{homeworkProblem}
 \noindent \textit{Mathematical Derivations of Gradient Descent}
-
 \begin{enumerate}[label=(\Alph*)]
 \item We can compute $\frac{\partial J}{\partial \theta_{pq}}$ by expanding the expression as outlined in the assignment documentation as follows:
 \begin{center}
@@ -379,14 +453,213 @@ $J(\theta)=(\theta^Tx^{(1)}-y^{(1)})^2_1+(\theta^Tx^{(1)}-y^{(1)})^2_2+\ldots(\t
 \end{center}
 Therefore, it appears we can model this double summation as a summation over the $p^{th}$ column and $q^{th}$ row.  Therefore, the partial derivative of a specific element, say, element $pq$ can be expressed as:
 \begin{center}
-$\boxed{\frac{\partial J}{\partial \theta _{pq}}=2x^{p}_{q}(\theta^T x^{p}-y^{p})^2_q}$
-
+$\boxed{\frac{\partial J}{\partial \theta _{pq}}=2x^{p}_{q}(\theta^T x^{p}-y^{p})_q}$
 \end{center}
+\item Based on the assignment specification, let $X$ be a matrix of size $n \times m$, where $n$ is the number of features and $m$ is the number of training examples.  Let $\theta$ be a matrix of size $k \times n$, where $k$ is the number of features.  Let $Y$ be a $k \times m$ matrix.  The provided expression taken from the assignment specification, with matrices substituted into their respective variables, gives the following expression:
+\[2\begin{bmatrix}
+x_{11} & \dots & x_{1m} \\
+\vdots & \ddots & \vdots \\
+x_{n1} & \dots & x_{nk}
+\end{bmatrix}\times
+\Bigg[\begin{bmatrix}
+\theta_{11} & \dots & \theta_{1n} \\
+\vdots & \ddots & \vdots \\
+\theta_{k1} & \dots & \theta_{kn}
+\end{bmatrix}^T \times
+\begin{bmatrix}
+x_{11} & \dots & x_{1m} \\
+\vdots & \ddots & \vdots \\
+x_{n1} & \dots & x_{nm}
+\end{bmatrix} - 
+\begin{bmatrix}
+y_{11} & \dots & y_{1m} \\
+\vdots & \ddots & \vdots \\
+y_{k1} & \dots & y_{km}
+\end{bmatrix}\Bigg]^T
+\]
 
-
+Simplification:
+\[\begin{bmatrix}
+2x_{11} & \dots & 2x_{1m} \\
+\vdots & \ddots & \vdots \\
+2x_{n1} & \dots & 2x_{nk}
+\end{bmatrix}\times
+\begin{bmatrix}
+\theta_{11}x_{11}+\ldots +  \theta_{k1}x_{n1}-y_{11} & \dots \\
+\vdots & \vdots  \\
+\dots  & \theta_{1n}x_{1m}+\ldots+\theta_{kn}x_{nm}-y_{km}
+\end{bmatrix}^T
+\]
+If the above matrix computation is carried out, we can observe, from part A, that the $pq$ term in the derivative of the cost function refers to an element within this gradient matrix.  For example, the top left hand side derivative, e.g. $\frac{\partial J}{\partial \theta_{11}}=2x_{11}(\theta_{11}x_{11}+\ldots + \theta_{k1}x_{n1}-y_{11}$.
+\textbf{Note:}  The top left hand corner element of the gradient was selected for ease of computation, but any element within this gradient matrix would be valid.
+\begin{lstlisting}
+#Cost Function
+def f2(x,y,theta):
+    ones = np.ones((1,x.shape[1]))
+    x = np.vstack((ones,x))
+    hypothesis = np.matmul(theta.T,x)
+    loss = np.power((hypothesis-y),2)
+    return np.sum(loss)
+\end{lstlisting}
+\begin{lstlisting}
+#Gradient Function
+def df2(x,y,theta):
+    ones = np.ones((1,x.shape[1]))
+    x = vstack((ones,x))
+    hypothesis = np.matmul(np.transpose(theta),x)-y
+    hypothesis = np.transpose(hypothesis)
+    gradient = 2*np.matmul(x,hypothesis)
+    return gradient
+\end{lstlisting}
+\item The code for testing the implementation of the cost and gradient is shown below.
+\begin{lstlisting}
+#Testing the cost and gradient functionality
+def part6():
+    #Testing the loss function
+    x = np.random.normal(0,0.6,(20,15))
+    y = np.random.normal(0.2,0.4,(5,15))
+    theta = np.random.normal(-0.1,0.3,(21,5))
+    h = 0.00001
+    #Cost of individual component
+    testarr1 = np.zeros(theta.shape)
+    testarr1[3,4] = h
+    print("Cost is:")
+    print((f2(x,y,theta+testarr1)-f2(x,y,theta-testarr1))/(2*h))
+    print("Gradient is:")
+    print(df2(x,y,theta)[3,4])
+    testarr2 = np.zeros(theta.shape)
+    testarr2[1,4] = h
+    print("Cost is:")
+    print((f2(x,y,theta+testarr2)-f2(x,y,theta-testarr2))/(2*h))
+    print("Gradient is:")
+    print(df2(x,y,theta)[1,4])
+    testarr3 = np.zeros(theta.shape)
+    testarr3[2,3] = h
+    print("Cost is:")
+    print((f2(x,y,theta+testarr3)-f2(x,y,theta-testarr3))/(2*h))
+    print("Gradient is:")
+    print(df2(x,y,theta)[2,3])
+    testarr4 = np.zeros(theta.shape)
+    testarr4[8,4] = h
+    print("Cost is:")
+    print((f2(x,y,theta+testarr4)-f2(x,y,theta-testarr4))/(2*h))
+    print("Gradient is:")
+    print(df2(x,y,theta)[8,4])
+    testarr5 = np.zeros(theta.shape)
+    testarr5[10,1] = h
+    print("Cost is:")
+    print((f2(x,y,theta+testarr5)-f2(x,y,theta-testarr5))/(2*h))
+    print("Gradient is:")
+    print(df2(x,y,theta)[10,1])
+\end{lstlisting}
+The output that results from execution of this code is below:
+\begin{lstlisting}
+Cost is:
+-8.507892229658864
+Gradient is:
+-8.5078922306346
+Cost is:
+-5.070817460506305
+Gradient is:
+-5.070817460432679
+Cost is:
+-11.655092452400593
+Gradient is:
+-11.655092451975934
+Cost is:
+-3.5024079892309596
+Gradient is:
+-3.5024079896724483
+Cost is:
+-0.24353752436923057
+Gradient is:
+-0.2435375237734189
+\end{lstlisting}
+The $h$ was selected so as to try to compute a small difference, similar to the definition of the derivative - as $h$ further decreases, you would observe that the gradient and incremental difference in cost appear to converge.
 \end{enumerate}
 
 \end{homeworkProblem}
 \clearpage
 %----------------------------------------------------------------------------------------
+%	PROBLEM 7
+%----------------------------------------------------------------------------------------
+
+\begin{homeworkProblem}
+
+\noindent \textit{Linear Regression with Multiple Actors}
+
+Running the linear regression classifier results in a training accuracy of $89\%$ and a validation accuracy of $56\%$.  Both the $\alpha$ and number of iterations were modified, to varying degrees of success - however, it is worth noting that the validation accuracy is significantly lower than the training accuracy which may be a symptom of overfitting.
+\par Two loops were written in order to obtain the training hypothesis and validation hypothesis labels.  The steps are written below.
+\begin{enumerate}
+\item A matrix of 0's was initialized to the same shape as that of the label matrix
+\item Each column in the label matrix was scanned for it's maximum value and the index of that value was stored in a new variable, \textit{max}
+\item Starting at the $0^{th}$ column, a 1 was stored into the 0's matrix for each index in \textit{max}, and iterated through until the last column was reached.
+\item The resultant matrix now had only one value of 1 in each column and was compared to the label matrix.
+\end{enumerate}
+An example of this for the training data is shown below.
+\begin{lstlisting}
+    #Training hypothesis
+    ones_t = np.ones((1,training.shape[1]))
+    training_with_bias = vstack((ones_t,training))
+    training_hypothesis = np.matmul(theta.T,training_with_bias)
+    max = training_hypothesis.argmax(axis=0)
+    max = np.array(max)
+    training_hypothesis_labels = np.zeros((training_hypothesis.shape))
+    print(training_hypothesis_labels.shape)
+    i = 0
+    while i < training_hypothesis_labels.shape[1]:
+        index = max[i]
+        training_hypothesis_labels[index,i]=1
+        i+=1
+
+    correct = 0
+    i = 0
+    while i < training_hypothesis_labels.shape[1]:
+        if np.array_equal(training_hypothesis_labels[:,i],training_labels[:,i]) is True:
+            correct += 1
+        i+=1
+    print("Training accuracy is: " + str(correct/600.0))
+
+\end{lstlisting}
+
+\end{homeworkProblem}
+\clearpage
+%----------------------------------------------------------------------------------------
+%	PROBLEM 8
+%----------------------------------------------------------------------------------------
+\begin{homeworkProblem}
+\noindent \textit{Visualizing $\theta 's$ with multiple label matrix}
+
+The 6 figures below show the visualized $\theta 's$ for training on the full set of actors in $act$ with the label matrix, as outlined in the assignment specification.
+\begin{center}
+\begin{figure}[!ht]\centering
+\begin{subfigure}{.3\textwidth}\centering
+  \includegraphics[width=.3\linewidth]{thetas0.jpg}
+  \caption{Baldwin $\theta 's$}
+\end{subfigure}
+\begin{subfigure}{.3\textwidth}\centering
+  \includegraphics[width=.3\linewidth]{thetas1.jpg}
+  \caption{Bracco $\theta 's$}
+\end{subfigure}
+\begin{subfigure}{.3\textwidth}\centering
+  \includegraphics[width=.3\linewidth]{thetas2.jpg}
+  \caption{Carell $\theta 's$}
+\end{subfigure}
+\begin{subfigure}{.3\textwidth}\centering
+  \includegraphics[width=.3\linewidth]{thetas3.jpg}
+  \caption{Gilpin $\theta 's$}
+\end{subfigure}
+\begin{subfigure}{.3\textwidth}\centering
+  \includegraphics[width=.3\linewidth]{thetas4.jpg}
+  \caption{Hader $\theta 's$}
+\end{subfigure}
+\begin{subfigure}{.3\textwidth}\centering
+  \includegraphics[width=.3\linewidth]{thetas5.jpg}
+  \caption{Harmon $\theta 's$}
+\end{subfigure}
+\caption{$\theta$ values for each individual actor}
+\end{figure}
+\end{center}
+A potential explanation for the lack of "face-like" appearance in $\theta 's $ obtained after training may be that the size of the training set is too large for each actor.  As observed in part 4, with only two actors from the Baldwin and Carell sets, the $\theta 's$ visualized more resembled faces.
+\end{homeworkProblem}
 \end{document}

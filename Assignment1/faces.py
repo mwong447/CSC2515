@@ -33,8 +33,8 @@ def rgb2gray(rgb):
     except IndexError:
         print("Image is already grayscale")
 
-def getRawData():
-    actors = "facescrub_actors.txt"
+def getRawData(file,number):
+    actors = str(file)
     list = getActors(actors)
     if not os.path.exists(os.path.join(os.getcwd(),"uncropped/")):
         os.makedirs(os.path.join(os.getcwd(),"uncropped/"))
@@ -44,20 +44,29 @@ def getRawData():
         for line in open(getActors(actors,1)):
             if a in line:
                 filename = name + str(i)+'.'+line.split()[4].split('.')[-1]
-                if filename.endswith(".jpg"):
+                if filename.endswith(".jpg") and i !=number:
                     try:
-                       print("Attempting to look at up URL: " + line.split()[4])
-                       if os.path.isfile(os.path.join(os.path.join(os.getcwd(),"uncropped"),filename)):
-                           continue
-                       page = urllib.request.urlretrieve(line.split()[4],os.path.join(os.path.join(os.getcwd(),"uncropped"),filename),timeout)
-                       print("Attempting to write to disk: " + filename)
-                       i+=1
+                        url = line.split()[4]
+                        print("Attempting to look at URL: " + url)
+
+                        if os.path.isfile(os.path.join(os.path.join(os.getcwd(),"uncropped"),filename)):
+                            continue
+                        try:
+                            img = imread(urllib.request.urlopen(url))
+                            print("Attempting to save file to disk")
+                            imsave(os.path.join(os.path.join(os.getcwd(),"uncropped"),'raw_'+filename),img)
+                            i+=1
+                        except IOError:
+                            print("Unable to read image")
+                        except ValueError:
+                            print("Array corrupted")
                     except urllib.error.HTTPError:
                         print("Unable to get content")
                     except urllib.error.URLError:
                         print("Unable to reach URL")
                     except urllib.error.ContentTooShortError:
                         print("Content too short")
+        
 
 def getCroppedData(list,file, partNumber):
     partString = str("cropped"+str(partNumber)+"/")
@@ -147,7 +156,6 @@ def df2(x,y,theta):
     hypothesis = np.transpose(hypothesis)
     gradient = 2*np.matmul(x,hypothesis)
     return gradient
-
 
 def label(x):
     label = flattenData(x)
@@ -338,7 +346,6 @@ def part4a(theta):
     plt.imsave('two_actor_thetas.jpg',test,cmap='RdBu')
     
     
-
     #Implementing gradient descent for thetas on full training set by modifying the number of iterations and initializing theta differently
     training = complete[0:200,:]
     print("Number of Baldwin in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
@@ -447,61 +454,74 @@ def part5():
     complete = np.column_stack((x,y))
     np.random.seed(1)
     np.random.shuffle(complete)
-
-    #i = 50
-    #while i < 601:
+    accuracies_t = []
+    accuracies_v = []
+    training_sizes = []
+    i = 600
+    while i < 601:
         #Using the full set of training data
-    '''
-    training = complete[0:i,:]
-    validation = complete[i+1:i+int(i*0.8),:]
-    '''
-    training = complete[0:600,:]
-    validation = complete[601:691,:]
-    print("Number of Females in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
-    print("Number of Males in training set: " + str((np.shape(np.where(training[:,-1]==1))[1])))
-    print("Number of Females in validation set: " + str((np.shape(np.where(validation[:,-1]==0))[1])))
-    print("Number of Males in validation set: " + str((np.shape(np.where(validation[:,-1]==1))[1])))
+        training = complete[0:i,:]
+        validation = complete[601:691,:]
+
+        print("Number of Females in training set: " + str((np.shape(np.where(training[:,-1]==0))[1])))
+        print("Number of Males in training set: " + str((np.shape(np.where(training[:,-1]==1))[1])))
+        print("Number of Females in validation set: " + str((np.shape(np.where(validation[:,-1]==0))[1])))
+        print("Number of Males in validation set: " + str((np.shape(np.where(validation[:,-1]==1))[1])))
         
-    theta0 = np.ones((1025,))
-    training_labels = training[:,-1]
-    training = np.transpose(training[:,:-1])
-    theta1 = grad_descent(f,df,training,training_labels,theta0,0.000001,10000)
+        theta0 = np.ones((1025,))
+        training_labels = training[:,-1]
+        training = np.transpose(training[:,:-1])
+        theta1 = grad_descent(f,df,training,training_labels,theta0,0.000001,10000)
 
-    #Training hypothesis
-    ones_t = np.ones((1,training.shape[1]))
-    training_with_bias = vstack((ones_t,training))
-    training_hypothesis = np.dot(theta1.T,training_with_bias)
-    j = 0
-    while j < training_hypothesis.shape[0]:
-        if training_hypothesis[j] > 0.5:
-            training_hypothesis[j] = 1
-        else:
-            training_hypothesis[j] = 0
-        j+=1
+        #Training hypothesis
+        ones_t = np.ones((1,training.shape[1]))
+        training_with_bias = vstack((ones_t,training))
+        training_hypothesis = np.dot(theta1.T,training_with_bias)
+        j = 0
+        while j < training_hypothesis.shape[0]:
+            if training_hypothesis[j] > 0.5:
+                training_hypothesis[j] = 1
+            else:
+                training_hypothesis[j] = 0
+            j+=1
+        accuracy_t = np.sum(np.equal(training_hypothesis,training_labels))/float(i)
+        print("Accuracy percentage in training set:" + str(accuracy_t))
+        accuracies_t.append(accuracy_t)
     
-    print("Accuracy percentage in training set:" + str(np.sum(np.equal(training_hypothesis,training_labels))/float(600)))
-    
-    validation_labels = validation[:,-1]
-    validation = np.transpose(validation[:,:-1])
-    ones_v = np.ones((1,validation.shape[1]))
-    validation_with_bias = vstack((ones_v,validation))
-    validation_hypothesis = np.dot(theta1.T,validation_with_bias)
-    j = 0
-    while j < validation_hypothesis.shape[0]:
-        if validation_hypothesis[j] > 0.5:
-            validation_hypothesis[j] = 1
-        else:
-            validation_hypothesis[j] = 0
-        j+=1
+        validation_labels = validation[:,-1]
+        validation = np.transpose(validation[:,:-1])
+        ones_v = np.ones((1,validation.shape[1]))
+        validation_with_bias = vstack((ones_v,validation))
+        validation_hypothesis = np.dot(theta1.T,validation_with_bias)
+        j = 0
+        while j < validation_hypothesis.shape[0]:
+            if validation_hypothesis[j] > 0.5:
+                validation_hypothesis[j] = 1
+            else:
+                validation_hypothesis[j] = 0
+            j+=1
+        accuracy_v = np.sum(np.equal(validation_hypothesis,validation_labels))/(float(90.0))
+        print("Accuracy percentage in validation set: " + str(accuracy_v))
+        accuracies_v.append(accuracy_v)
+        training_sizes.append(i)
+        i+=50
 
-    print("Accuracy percentage in validation set: " + str(np.sum(np.equal(validation_hypothesis,validation_labels))/(float(90))))
-        #i+=50
+    print(training_sizes)
+    print(accuracies_t)
+    print(accuracies_v)
+
+    plt.xlabel("Training Size")
+    plt.ylabel("Performance")
+    plt.title("Training Size vs. Performance")
+    plt.plot(training_sizes,accuracies_t,'r--', label="Training Performance")
+    plt.plot(training_sizes,accuracies_v,'b--', label="Validation Performance")
+    plt.legend()
+    #plt.show()
+    plt.savefig('Trainsize.jpg')
 
     act = ['Kristin Chenoweth', 'Fran Dresche', 'America Ferrera','Daniel Radcliffe','Gerard Butler','Michael Vartan']
     x2 = getDataMatrix(act,str(5)+'a')
     y2 = getDataLabels(act,str(5)+'a')
-    print(y2.shape)
-    print(y2)
     i = 0
     #Cleaning up data matrix for classification - 0 is female, 1 is male
     while i < y2.shape[0]:
@@ -529,8 +549,6 @@ def part5():
     hypothesis_u = hypothesis_u[1:]
     print(hypothesis_u.shape)
     print("Accuracy percentage in Unseen set: " + str(np.sum(np.equal(hypothesis_u,y2))/float(hypothesis_u.shape[0])))
-
-
 
 def part6():
     #Testing the loss function
@@ -620,13 +638,12 @@ def part7():
 
     correct = 0
     i = 0
-        
     while i < training_hypothesis_labels.shape[1]:
         if np.array_equal(training_hypothesis_labels[:,i],training_labels[:,i]) is True:
             correct += 1
         i+=1
     print("Training accuracy is: " + str(correct/600.0))
-    
+
     #Validation hypothesis
     
     ones_v = np.ones((1,validation.shape[1]))
@@ -661,16 +678,16 @@ def part8(theta):
         plt.imsave("thetas" + str(i) + ".jpg",sub_theta,cmap='RdBu')
         i+=1
     
-    
-
-    
 def main():
-    #theta = part3()
-    #part4a(theta)
+
+    getRawData("facescrub_actors.txt",3)
+    getRawData("facescrub_actresses.txt",3)
+    theta = part3()
+    part4a(theta)
     part5()
-    #part6()
-    #theta = part7()
-    #part8(theta)
+    part6()
+    theta = part7()
+    part8(theta)
 
 
 
