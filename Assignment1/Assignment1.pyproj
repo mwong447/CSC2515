@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>314dfc95-ca47-4ce8-a6d7-d9a450f2deac</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>faces.py</StartupFile>
+    <StartupFile>knn.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -23,6 +23,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="faces.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="knn.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
