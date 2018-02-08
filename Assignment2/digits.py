@@ -10,46 +10,69 @@ from scipy.ndimage import filters
 import urllib
 from numpy import random
 import os
-import pickle
+import _pickle as cPickle
 from scipy.io import loadmat
+
+#Load the data
+def loadData():
+    M = loadmat("mnist_all.mat")
+    return M
 
 #Softmax function
 def softmax(y):
-    return np.exp(y)/np.tile(np.sum(np.exp(y),0),(len(y),1))
+    return exp(y)/tile(sum(exp(y),0), (len(y),1))
 
 #Tanh function
 def tanh(y,W,b):
-    return np.tanh(np.dot(W.t,y)+b)
+    return np.tanh(np.dot(W.T,y)+b)
 
 #Negative log-loss
 def NLL(y,y_):
     return np.sum(y_*np.log(y))
 
-#Part 2 Implementation
+#Forward propagation
+def forward(x, W0, b0, W1, b1):
+    L0 = tanh(x, W0, b0)
+    L1 = dot(W1.T, L0) + b1
+    output = softmax(L1)
+    return L0, L1, output
+
+#Incomplete function for computing the gradient of the cross-entropy cost function w.r.t the parameters of a neural network
+def deriv_multilayer(W0, b0, W1, b1, x, L1, y,y_):
+    dCdL1 = y-y_
+    dCdW1 = np.dot(L0, dCdL1.T)
+
+#-------------------------------Part 2 Implementation------------------------------------------------------#
 def compute(X,W,b):
     hypothesis = np.matmul(W.T,X)
     hypothesis = hypothesis+b
-    return softmax(hypothesis)
+    hypothesis = softmax(hypothesis)
+    return hypothesis
+
+def testPart2():
+    #Load Data
+    M = loadmat("mnist_all.mat")
+    #Testing computation function
+    #Initialize weights and bias to random normal variables
+    W = np.random.normal(0,0.2,(784,1))
+    b = np.random.normal(0,0.1,(10,1))
+    test = M["train9"][200].flatten()/255.0
+    print(test.shape)
+    print(compute(test,W,b))
+
+#-------------------------------Part 3 Implementation------------------------------------------------------#
+
+def NLL_grad():
+
+
+
+
 
 
 #Main Function
 def main():
+    testPart2()
     
-    #Loading the data from MNIST
-    M = loadmat("mnist_all.mat")
-    ##Show a random MNIST training data sample
-    #imshow(M["train5"][150].reshape((28,28)),cmap=cm.gray)
-    #show()
-
-
-    #Testing computation function
-    #Initial weights and bias to random normal variables
-
-    W = np.random.normal(0,0.2,(784,10))
-    b = np.random.normal(0,0.1,(10))
-    test = M["train9"][200].flatten()/255.0
-    print(test.shape)
-    print(compute(test,W,b))
     
 
 
