@@ -10,7 +10,7 @@ from scipy.ndimage import filters
 import urllib
 from numpy import random
 import os
-import _pickle as cPickle
+import pickle as pickle
 from scipy.io import loadmat
 
 #Load the data
@@ -42,6 +42,34 @@ def deriv_multilayer(W0, b0, W1, b1, x, L1, y,y_):
     dCdL1 = y-y_
     dCdW1 = np.dot(L0, dCdL1.T)
 
+#-------------------------------Test Code Implementation------------------------------------------------------#
+def test():
+    #Load sample weights for the multilayer neural network
+    M = loadData()
+    file = open(os.path.join(os.getcwd(),'snapshot50.pkl'),'rb')
+    snapshot = pickle.load(file,encoding="latin1")
+    W0 = snapshot["W0"]
+    print(W0.shape)
+    b0 = snapshot["b0"].reshape((300,1))
+    W1 = snapshot["W1"]
+    b1 = snapshot["b1"].reshape((10,1))
+
+    #Load one example from the training set, and run it through the
+    #neural network
+    x = M["train5"][148:149].T    
+    L0, L1, output = forward(x, W0, b0, W1, b1)
+    #get the index at which the output is the largest
+    y = argmax(output)
+
+    ################################################################################
+    #Code for displaying a feature from the weight matrix mW
+    #fig = figure(1)
+    #ax = fig.gca()    
+    #heatmap = ax.imshow(mW[:,50].reshape((28,28)), cmap = cm.coolwarm)    
+    #fig.colorbar(heatmap, shrink = 0.5, aspect=5)
+    #show()
+    ################################################################################
+
 #-------------------------------Part 2 Implementation------------------------------------------------------#
 def compute(X,W,b):
     hypothesis = np.matmul(W.T,X)
@@ -62,16 +90,15 @@ def testPart2():
 
 #-------------------------------Part 3 Implementation------------------------------------------------------#
 
-def NLL_grad():
-
-
 
 
 
 
 #Main Function
+
 def main():
-    testPart2()
+    #testPart2()
+
     
     
 

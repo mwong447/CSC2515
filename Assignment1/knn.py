@@ -3,7 +3,7 @@ from sklearn.metrics import accuracy_score
 import numpy as np
 import matplotlib.pyplot as plt
 #Set up seed and datasets
-np.random.seed(1)
+np.random.seed(100)
 x1 = np.random.normal(loc = 1.0, scale = 0.15,size=(25,2))
 x2 = np.random.normal(loc = 1.0, scale = 5.0,size=(75,2))
 x3 = np.random.normal(loc = 6.0, scale = 0.15,size = (10,2))
