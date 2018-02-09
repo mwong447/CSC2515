@@ -27,8 +27,8 @@ def tanh(y,W,b):
     return np.tanh(np.dot(W.T,y)+b)
 
 #Negative log-loss
-def NLL(y,y_):
-    return np.sum(y_*np.log(y))
+def NLL(y,p):
+    return -np.sum(y*np.log(softmax(p)))
 
 #Forward propagation
 def forward(x, W0, b0, W1, b1):
@@ -49,17 +49,30 @@ def test():
     file = open(os.path.join(os.getcwd(),'snapshot50.pkl'),'rb')
     snapshot = pickle.load(file,encoding="latin1")
     W0 = snapshot["W0"]
+    print("W0 Shape:")
     print(W0.shape)
     b0 = snapshot["b0"].reshape((300,1))
+    print("b0 Shape:")
+    print(b0.shape)
     W1 = snapshot["W1"]
+    print("W1 Shape:")
+    print(W1.shape)
     b1 = snapshot["b1"].reshape((10,1))
+    print("b1 Shape:")
+    print(b1.shape)
 
     #Load one example from the training set, and run it through the
     #neural network
-    x = M["train5"][148:149].T    
+    x = (M["train5"][148:149].T)/255.0
+    print("x Shape:")
+    print(x.shape)
     L0, L1, output = forward(x, W0, b0, W1, b1)
     #get the index at which the output is the largest
+    print("output shape:")
+    print(output.shape)
     y = argmax(output)
+    print("prediction:")
+    print(y)
 
     ################################################################################
     #Code for displaying a feature from the weight matrix mW
@@ -70,34 +83,67 @@ def test():
     #show()
     ################################################################################
 
-#-------------------------------Part 2 Implementation------------------------------------------------------#
+#-------------------------------Part 2 Function Implementation------------------------------------------------------#
 def compute(X,W,b):
     hypothesis = np.matmul(W.T,X)
     hypothesis = hypothesis+b
     hypothesis = softmax(hypothesis)
     return hypothesis
 
+#-------------------------------Part 2 Test------------------------------------------------------#
+
 def testPart2():
     #Load Data
     M = loadmat("mnist_all.mat")
     #Testing computation function
     #Initialize weights and bias to random normal variables
-    W = np.random.normal(0,0.2,(784,1))
+    W = np.random.normal(0,0.2,(784,10))
     b = np.random.normal(0,0.1,(10,1))
-    test = M["train9"][200].flatten()/255.0
+    test =(M["train9"][200]/255.0).flatten().T
     print(test.shape)
     print(compute(test,W,b))
 
-#-------------------------------Part 3 Implementation------------------------------------------------------#
+#-------------------------------Part 3 Function Implementation------------------------------------------------------#
+
+def grad_NLL(y,p):
+
+    grad = softmax(p)-y
+    return grad
 
 
+#-------------------------------Part 3 Test------------------------------------------------------#
 
+def testPart3():
+    #Load some test data from MNIST
+    M = loadData()
+    W = np.random.normal(0,0.2,(784,10))
+    b = np.random.normal(0,0.1,(10,1))
+    #Finite difference
+    h = 0.00001
+    #Take 0 for example for testing
+    x = ((M["train0"][150].T)/255.0).reshape((784,1))
+    #Create true label array
+    y = np.array([1,0,0,0,0,0,0,0,0,0])
+    y = np.reshape(y,((10,1)))
 
-
+    #Create empty arrays to include finite differences
+    finite_W = np.zeros((10,784))
+    finite_W[4][5] = h
+    finite_b = np.zeros((10,1))
+    finite_b[3] = h
+    
+    #Compute cost of finite difference:
+    finite = ((NLL(y,np.matmul(W.T+finite_W,x)-(b+finite_b)))-(NLL(y,np.matmul(W.T-finite_W,x)-(b-finite_b))))/(2*h)
+    print(finite)
+    gradient = grad_NLL(y,np.matmul(W.T,x)-b)
+    print(gradient)
+ 
 #Main Function
 
 def main():
     #testPart2()
+    testPart3()
+    #test()
 
     
     
