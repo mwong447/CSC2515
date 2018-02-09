@@ -115,6 +115,7 @@ def grad_NLL(y,p):
 
 def testPart3():
     #Load some test data from MNIST
+    np.random.seed(5)
     M = loadData()
     W = np.random.normal(0,0.2,(784,10))
     b = np.random.normal(0,0.1,(10,1))
@@ -138,12 +139,57 @@ def testPart3():
     gradient = grad_NLL(y,np.matmul(W.T,x)-b)
     print(gradient)
  
+#-------------------------------Part 4 Implementation------------------------------------------------------#
+
+def grad_descent(NLL, grad_NLL, x, y, init_t, b, alpha, iterations):
+    EPS = 1e-5
+    prev_t = init_t-10*EPS
+    t = init_t.copy()
+    max_iter = iterations
+    iter = 0
+    while np.linalg.norm(t-prev_t) > EPS and iter < max_iter:
+        prev_t=t.copy()
+        t-=alpha*grad_NLL(y, compute(x,t,b))
+        if iter % 500 == 0:
+            print("Iteration: " + str(iter))
+            print("Cost: "+str(NLL(y,compute(x,t,b))))
+            print("Gradient: " + str(grad_NLL(y,compute(x,t,b))))
+        iter += 1
+    return t
+
+#-------------------------------Part 4 Test------------------------------------------------------#
+
+def testPart4():
+    #Load data
+    M = loadData()
+    #Initialize training data
+    data = M["train0"]
+    #Initialize labels
+    labels = np.zeros((10,data.shape[0]))
+    labels[0,:]=1
+    #Get training data and labels
+    i = 1
+    while i<10:
+        next = M["train"+str(i)]
+        new_labels = np.zeros((10,next.shape[0]))
+        new_labels[i,:]=1
+        data = np.vstack((data,next))
+        labels = np.hstack((labels,new_labels))
+        i+=1
+    data = np.transpose(data)
+    
+    
+    W = np.random.normal(0,0.2,(784,60000))
+    b = np.random.normal((60000,60000))
+    w_ = grad_descent(NLL,grad_NLL,data,labels,W,b,0.00001, 30000)
+
 #Main Function
 
 def main():
     #testPart2()
-    testPart3()
+    #testPart3()
     #test()
+    testPart4()
 
     
     
