@@ -18,9 +18,34 @@ def loadData():
     M = loadmat("mnist_all.mat")
     return M
 
+#Helper function to load the training data from matrix
+def loadTrain(M):
+    #Initialize training data
+    training = M["train0"]
+    #Initialize labels
+    labels = np.zeros((10,training.shape[0]))
+    labels[0,:]=1
+    #Get training data and labels
+    i = 1
+    while i<10:
+        next = M["train"+str(i)]
+        new_labels = np.zeros((10,next.shape[0]))
+        new_labels[i,:]=1
+        training = np.vstack((training,next))
+        labels = np.hstack((labels,new_labels))
+        i+=1
+    training = np.transpose(training)
+    training = training/255.0
+    return training, labels
+
+#Helper function to display an MNIST data point.
+def display(x):
+    imshow(x.reshape((28,28)),cmap = cm.gray)
+    show()
+
 #Softmax function
 def softmax(y):
-    return exp(y)/tile(sum(exp(y),0), (len(y),1))
+    return np.exp(y)/np.tile(np.sum(np.exp(y),0), (len(y),1))
 
 #Tanh function
 def tanh(y,W,b):
@@ -74,42 +99,33 @@ def test():
     print("prediction:")
     print(y)
 
-    ################################################################################
-    #Code for displaying a feature from the weight matrix mW
-    #fig = figure(1)
-    #ax = fig.gca()    
-    #heatmap = ax.imshow(mW[:,50].reshape((28,28)), cmap = cm.coolwarm)    
-    #fig.colorbar(heatmap, shrink = 0.5, aspect=5)
-    #show()
-    ################################################################################
 
 #-------------------------------Part 2 Function Implementation------------------------------------------------------#
 def compute(X,W,b):
     hypothesis = np.matmul(W.T,X)
     hypothesis = hypothesis+b
-    hypothesis = softmax(hypothesis)
     return hypothesis
 
 #-------------------------------Part 2 Test------------------------------------------------------#
 
 def testPart2():
     #Load Data
-    M = loadmat("mnist_all.mat")
+    M = loadData()
+    train = loadTrain(M)
     #Testing computation function
     #Initialize weights and bias to random normal variables
-    W = np.random.normal(0,0.2,(784,10))
-    b = np.random.normal(0,0.1,(10,1))
-    test =(M["train9"][200]/255.0).flatten().T
-    print(test.shape)
-    print(compute(test,W,b))
+    W = np.random.normal(0.0,0.2,(784,10))
+    b = np.random.normal(0,0.1,(10,60000))
+    hypothesis = compute(train,W,b)
+    print(softmax(hypothesis))
 
 #-------------------------------Part 3 Function Implementation------------------------------------------------------#
+#Computes the gradient of negative log-loss function
+def grad_NLL(y,o):
 
-def grad_NLL(y,p):
-
-    grad = softmax(p)-y
+    p = softmax(o)
+    grad = p - y
     return grad
-
 
 #-------------------------------Part 3 Test------------------------------------------------------#
 
@@ -120,27 +136,37 @@ def testPart3():
     W = np.random.normal(0,0.2,(784,10))
     b = np.random.normal(0,0.1,(10,1))
     #Finite difference
-    h = 0.00001
+    h = 0.000001
     #Take 0 for example for testing
     x = ((M["train0"][150].T)/255.0).reshape((784,1))
+    #display(x)
     #Create true label array
     y = np.array([1,0,0,0,0,0,0,0,0,0])
     y = np.reshape(y,((10,1)))
 
     #Create empty arrays to include finite differences
-    finite_W = np.zeros((10,784))
-    finite_W[4][5] = h
+    finite_W = np.zeros((784,10))
     finite_b = np.zeros((10,1))
-    finite_b[3] = h
+
     
-    #Compute cost of finite difference:
-    finite = ((NLL(y,np.matmul(W.T+finite_W,x)-(b+finite_b)))-(NLL(y,np.matmul(W.T-finite_W,x)-(b-finite_b))))/(2*h)
-    print(finite)
-    gradient = grad_NLL(y,np.matmul(W.T,x)-b)
+    #test with only biases
+    finite_b[2] = h
+    finite = (NLL(y,compute(x, W,b+finite_b))-NLL(y,compute(x,W,b)))/(h)
+    print("cost: " + str(finite))
+    gradient = grad_NLL(y,compute(x,W,b))
+    print("Gradient Vector: ")
+    print(gradient)
+    print(np.sum(gradient))
+    
+    finite_W[:,2]=h
+    ##Test with only weights
+    finite = (NLL(y,compute(x, W+finite_W,b))-NLL(y,compute(x,W,b)))/(h)
+    print("Cost: " + str(finite))
+    gradient = grad_NLL(y,compute(x,W,b))
+    print("Gradient vector:")
     print(gradient)
  
 #-------------------------------Part 4 Implementation------------------------------------------------------#
-
 def grad_descent(NLL, grad_NLL, x, y, init_t, b, alpha, iterations):
     EPS = 1e-5
     prev_t = init_t-10*EPS
@@ -163,24 +189,14 @@ def testPart4():
     #Load data
     M = loadData()
     #Initialize training data
-    data = M["train0"]
-    #Initialize labels
-    labels = np.zeros((10,data.shape[0]))
-    labels[0,:]=1
-    #Get training data and labels
-    i = 1
-    while i<10:
-        next = M["train"+str(i)]
-        new_labels = np.zeros((10,next.shape[0]))
-        new_labels[i,:]=1
-        data = np.vstack((data,next))
-        labels = np.hstack((labels,new_labels))
-        i+=1
-    data = np.transpose(data)
+    data, labels = loadTrain(M)
+    print(data.shape)
+    print(labels.shape)
     
     
-    W = np.random.normal(0,0.2,(784,60000))
-    b = np.random.normal((60000,60000))
+    W = np.random.normal(0,0.2,(784,10))
+    b = np.random.normal(0,0.2,(10,60000))
+    
     w_ = grad_descent(NLL,grad_NLL,data,labels,W,b,0.00001, 30000)
 
 #Main Function
