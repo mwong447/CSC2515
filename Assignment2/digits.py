@@ -88,15 +88,19 @@ def test():
 
     #Load one example from the training set, and run it through the
     #neural network
-    x = (M["train5"][148:149].T)/255.0
+    x = (M["train5"][148:200].T)/255.0
     print("x Shape:")
     print(x.shape)
     L0, L1, output = forward(x, W0, b0, W1, b1)
     #get the index at which the output is the largest
-    print("output shape:")
+    print("Output shape:")
     print(output.shape)
-    y = argmax(output)
-    print("prediction:")
+    print("L0 shape:")
+    print(L0.shape)
+    print("L1 shape:")
+    print(L1.shape)
+    y = argmax(output,axis=0)
+    print("Prediction:")
     print(y)
 
 
@@ -128,6 +132,8 @@ def grad_NLL_W(y,o,layer):
     grad = np.matmul(grad,np.transpose(layer))
     return np.transpose(grad)
 
+
+#Computes the gradient of negative log-loss function for biases only
 def grad_NLL_b(y,o):
     p = softmax(o)
     grad = p-y
@@ -194,19 +200,22 @@ def testPart3():
 
  
 #-------------------------------Part 4 Implementation------------------------------------------------------#
-def grad_descent(NLL, grad_NLL, x, y, init_t, b, alpha, iterations):
+def grad_descent(NLL, grad_NLL, x, y, init_t, init_b, alpha, iterations):
     EPS = 1e-5
     prev_t = init_t-10*EPS
+    prev_b = init_b-10*EPS
     t = init_t.copy()
+    b = init_b.copy()
     max_iter = iterations
     iter = 0
-    while np.linalg.norm(t-prev_t) > EPS and iter < max_iter:
+    while np.linalg.norm(t-prev_t) > EPS and iter < max_iter and np.linalg.norm(b-prev_b) > EPS:
         prev_t=t.copy()
-        t-=alpha*np.transpose(grad_NLL(y, compute(x,t,b),np.transpose(x)))
-        if iter % 500 == 0:
+        prev_b = b.copy()
+        t-=alpha*(grad_NLL_W(y, compute(x,t,b),x))
+        b-=alpha*(grad_NLL_b(y,compute(x,t,b)))
+        if iter % 100 == 0:
             print("Iteration: " + str(iter))
             print("Cost: "+str(NLL(y,compute(x,t,b))))
-            print("Gradient: " + str(np.transpose(grad_NLL(y,compute(x,t,b), np.transpose(x)))))
         iter += 1
     return t
 
@@ -224,14 +233,14 @@ def testPart4():
     W = np.random.normal(0,0.2,(784,10))
     b = np.random.normal(0,0.2,(10,60000))
     
-    w_ = grad_descent(NLL,grad_NLL,data,labels,W,b,0.00001, 30000)
+    w_ = grad_descent(NLL,grad_NLL_W,data,labels,W,b,0.000001, 30000)
 
 #Main Function
 
 def main():
     #testPart2()
-    testPart3()
-    #test()
+    #testPart3()
+    test()
     #testPart4()
 
     
