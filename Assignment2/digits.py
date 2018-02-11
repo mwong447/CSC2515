@@ -120,51 +120,78 @@ def testPart2():
     print(softmax(hypothesis))
 
 #-------------------------------Part 3 Function Implementation------------------------------------------------------#
-#Computes the gradient of negative log-loss function
-def grad_NLL(y,o):
+#Computes the gradient of negative log-loss function for weights only
+def grad_NLL_W(y,o,layer):
 
     p = softmax(o)
     grad = p - y
+    grad = np.matmul(grad,np.transpose(layer))
+    return np.transpose(grad)
+
+def grad_NLL_b(y,o):
+    p = softmax(o)
+    grad = p-y
     return grad
 
 #-------------------------------Part 3 Test------------------------------------------------------#
 
 def testPart3():
-    #Load some test data from MNIST
-    np.random.seed(5)
+    np.random.seed(1)
+    #Test gradient functionality
+    y = np.zeros((10,1))
+    y[1,:]=1
+    
+    #Create a test matrix
     M = loadData()
-    W = np.random.normal(0,0.2,(784,10))
-    b = np.random.normal(0,0.1,(10,1))
-    #Finite difference
-    h = 0.000001
-    #Take 0 for example for testing
-    x = ((M["train0"][150].T)/255.0).reshape((784,1))
-    #display(x)
-    #Create true label array
-    y = np.array([1,0,0,0,0,0,0,0,0,0])
-    y = np.reshape(y,((10,1)))
+    test0 = ((M["train1"][130].T)/255.0).reshape((784,1))
+    W = np.random.normal(0, 0.2, (784,10))
+    b = np.random.normal(0,0.2, (10,1))
+    hypothesis = compute(test0, W, b)
+    grad = grad_NLL(y,hypothesis, test0)
+    #print(np.where(test0 != 0))
 
-    #Create empty arrays to include finite differences
+    #Create a finite difference
+    h = 0.00001
+
+    #Test with weights
     finite_W = np.zeros((784,10))
-    finite_b = np.zeros((10,1))
+    finite_W[542,0]=h
+    finite_d = (NLL(y,compute(test0,W+finite_W,b))-NLL(y,compute(test0,W,b)))/(h)
+    print(finite_d)
+    gradient = grad_NLL(y,compute(test0,W,b),test0)
+    print(gradient.shape)
+    print(gradient[542,0])
 
-    
-    #test with only biases
-    finite_b[2] = h
-    finite = (NLL(y,compute(x, W,b+finite_b))-NLL(y,compute(x,W,b)))/(h)
-    print("cost: " + str(finite))
-    gradient = grad_NLL(y,compute(x,W,b))
-    print("Gradient Vector: ")
-    print(gradient)
-    print(np.sum(gradient))
-    
-    finite_W[:,2]=h
-    ##Test with only weights
-    finite = (NLL(y,compute(x, W+finite_W,b))-NLL(y,compute(x,W,b)))/(h)
-    print("Cost: " + str(finite))
-    gradient = grad_NLL(y,compute(x,W,b))
-    print("Gradient vector:")
-    print(gradient)
+    #Test with biases
+    finite_b = np.zeros((10,1))
+    finite_b[1,:] = h
+    finite_d = (NLL(y,compute(test0,W,b+finite_b))-NLL(y,compute(test0,W,b)))/(h)
+    print(finite_d)
+    gradient = grad_NLL(y,compute(test0,W,b),test0)
+    test_grad = gradient[:,1]
+    print(test_grad)
+
+    #Load some test data from MNIST
+    #np.random.seed(5)
+    #M = loadData()
+    #W = np.random.normal(0,0.2,(784,10))
+    #b = np.random.normal(0,0.1,(10,1))
+    ##Finite difference
+    #h = 0.000001
+    ##Take 0 for example for testing
+    #x = ((M["train0"][150].T)/255.0).reshape((784,1))
+    ##display(x)
+    ##Create true label array
+    #y = np.array([1,0,0,0,0,0,0,0,0,0])
+    #y = np.reshape(y,((10,1)))
+
+    ##Create empty arrays to include finite differences
+    #finite_W = np.zeros((784,10))
+    #finite_b = np.zeros((10,1))
+
+    ##Test with only biases
+
+
  
 #-------------------------------Part 4 Implementation------------------------------------------------------#
 def grad_descent(NLL, grad_NLL, x, y, init_t, b, alpha, iterations):
@@ -175,11 +202,11 @@ def grad_descent(NLL, grad_NLL, x, y, init_t, b, alpha, iterations):
     iter = 0
     while np.linalg.norm(t-prev_t) > EPS and iter < max_iter:
         prev_t=t.copy()
-        t-=alpha*grad_NLL(y, compute(x,t,b))
+        t-=alpha*np.transpose(grad_NLL(y, compute(x,t,b),np.transpose(x)))
         if iter % 500 == 0:
             print("Iteration: " + str(iter))
             print("Cost: "+str(NLL(y,compute(x,t,b))))
-            print("Gradient: " + str(grad_NLL(y,compute(x,t,b))))
+            print("Gradient: " + str(np.transpose(grad_NLL(y,compute(x,t,b), np.transpose(x)))))
         iter += 1
     return t
 
@@ -203,9 +230,9 @@ def testPart4():
 
 def main():
     #testPart2()
-    #testPart3()
+    testPart3()
     #test()
-    testPart4()
+    #testPart4()
 
     
     
