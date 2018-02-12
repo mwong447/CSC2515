@@ -119,7 +119,7 @@ def testPart2():
     #Testing computation function
     #Initialize weights and bias to random normal variables
     W = np.random.normal(0.0,0.2,(784,10))
-    b = np.random.normal(0,0.1,(10,60000))
+    b = np.random.normal(0,0.1,(10,1))
     hypothesis = compute(train,W,b)
     print(softmax(hypothesis))
 
@@ -137,6 +137,7 @@ def grad_NLL_W(y,o,layer):
 def grad_NLL_b(y,o):
     p = softmax(o)
     grad = p-y
+    grad = np.sum(grad,axis=1,keepdims = True)
     return grad
 
 #-------------------------------Part 3 Test------------------------------------------------------#
@@ -152,72 +153,68 @@ def testPart3():
     test0 = ((M["train1"][130].T)/255.0).reshape((784,1))
     W = np.random.normal(0, 0.2, (784,10))
     b = np.random.normal(0,0.2, (10,1))
-    hypothesis = compute(test0, W, b)
-    grad = grad_NLL(y,hypothesis, test0)
     #print(np.where(test0 != 0))
 
     #Create a finite difference
     h = 0.00001
 
-    #Test with weights
+    #Weight testing
     finite_W = np.zeros((784,10))
     finite_W[542,0]=h
     finite_d = (NLL(y,compute(test0,W+finite_W,b))-NLL(y,compute(test0,W,b)))/(h)
-    print(finite_d)
-    gradient = grad_NLL(y,compute(test0,W,b),test0)
-    print(gradient.shape)
-    print(gradient[542,0])
+    print("Cost for row 542, column 0: " + str(finite_d))
+    gradient = grad_NLL_W(y,compute(test0,W,b),test0)
+    print("Gradient for row 542, column 0: " + str(gradient[542,0]))
 
-    #Test with biases
+    #Bias testing
     finite_b = np.zeros((10,1))
     finite_b[1,:] = h
     finite_d = (NLL(y,compute(test0,W,b+finite_b))-NLL(y,compute(test0,W,b)))/(h)
-    print(finite_d)
-    gradient = grad_NLL(y,compute(test0,W,b),test0)
-    test_grad = gradient[:,1]
-    print(test_grad)
+    print("Cost for second element in bias: " + str(finite_d))
+    gradient = grad_NLL_b(y,compute(test0,W,b))
+    print("Gradient matrix: " + str(gradient))
 
-    #Load some test data from MNIST
-    #np.random.seed(5)
-    #M = loadData()
-    #W = np.random.normal(0,0.2,(784,10))
-    #b = np.random.normal(0,0.1,(10,1))
-    ##Finite difference
-    #h = 0.000001
-    ##Take 0 for example for testing
-    #x = ((M["train0"][150].T)/255.0).reshape((784,1))
-    ##display(x)
-    ##Create true label array
-    #y = np.array([1,0,0,0,0,0,0,0,0,0])
-    #y = np.reshape(y,((10,1)))
+    #Reinitialize test variables for another test
+    finite_W = np.zeros((784,10))
+    finite_b = np.zeros((10,1))
+    y = np.zeros((10,1))
+    test1 = ((M["train9"][130].T)/255.0).reshape((784,1))
+    y[9,:]=1
 
-    ##Create empty arrays to include finite differences
-    #finite_W = np.zeros((784,10))
-    #finite_b = np.zeros((10,1))
+    #Weight testing
+    finite_W[300,4] = h
+    finite_d = (NLL(y,compute(test1,W+finite_W,b))-NLL(y,compute(test1,W,b)))/(h)
+    print("Cost for row 300, column 4: " + str(finite_d))
+    gradient = grad_NLL_W(y,compute(test1,W,b),test1)
+    print("Gradient for row 300, column 4: " + str(gradient[300,4]))
 
-    ##Test with only biases
-
+    #Bias testing
+    finite_b[4,:] = h
+    finite_d = (NLL(y,compute(test1,W,b+finite_b))-NLL(y,compute(test1,W,b)))/(h)
+    print("Cost for fifth element in bias: " + str(finite_d))
+    gradient = grad_NLL_b(y,compute(test1,W,b))
+    print("Gradient matrix: " + str(gradient))
 
  
 #-------------------------------Part 4 Implementation------------------------------------------------------#
-def grad_descent(NLL, grad_NLL, x, y, init_t, init_b, alpha, iterations):
+def grad_descent(NLL, grad_NLL_W, grad_NLL_b, x, y, init_w, init_b, alpha, iterations):
     EPS = 1e-5
-    prev_t = init_t-10*EPS
+    prev_w = init_w-10*EPS
     prev_b = init_b-10*EPS
-    t = init_t.copy()
+    w = init_w.copy()
     b = init_b.copy()
     max_iter = iterations
     iter = 0
-    while np.linalg.norm(t-prev_t) > EPS and iter < max_iter and np.linalg.norm(b-prev_b) > EPS:
-        prev_t=t.copy()
+    while np.linalg.norm(w-prev_w) > EPS and iter < max_iter and np.linalg.norm(b-prev_b) > EPS:
+        prev_w=w.copy()
         prev_b = b.copy()
-        t-=alpha*(grad_NLL_W(y, compute(x,t,b),x))
-        b-=alpha*(grad_NLL_b(y,compute(x,t,b)))
+        w-=alpha*(grad_NLL_W(y, compute(x,w,b),x))
+        b-=alpha*(grad_NLL_b(y,compute(x,w,b)))
         if iter % 100 == 0:
             print("Iteration: " + str(iter))
-            print("Cost: "+str(NLL(y,compute(x,t,b))))
+            print("Cost: "+str(NLL(y,compute(x,w,b))))
         iter += 1
-    return t
+    return w, b
 
 #-------------------------------Part 4 Test------------------------------------------------------#
 
@@ -229,19 +226,18 @@ def testPart4():
     print(data.shape)
     print(labels.shape)
     
-    
     W = np.random.normal(0,0.2,(784,10))
-    b = np.random.normal(0,0.2,(10,60000))
+    b = np.random.normal(0,0.2,(10,1))
     
-    w_ = grad_descent(NLL,grad_NLL_W,data,labels,W,b,0.000001, 30000)
+    w_train, b_train = grad_descent(NLL, grad_NLL_W, grad_NLL_b, data, labels, W, b, 0.000001, 30000)
 
 #Main Function
 
 def main():
     #testPart2()
     #testPart3()
-    test()
-    #testPart4()
+    #test()
+    testPart4()
 
     
     
