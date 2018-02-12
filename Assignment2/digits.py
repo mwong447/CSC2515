@@ -36,7 +36,18 @@ def loadTrain(M):
         i+=1
     training = np.transpose(training)
     training = training/255.0
+    training.astype(double)
     return training, labels
+
+#Helper function to split data
+def split(data,labels):
+    np.random.seed(1)
+    combined = np.vstack((data,labels))
+    np.random.shuffle(combined)
+    trainData, validData, testData = combined[:-10,:int(0.7*combined.shape[1])], combined[:-10,int(0.7*combined.shape[1]):int(0.9*combined.shape[1])], combined[:-10,int(0.9*combined.shape[1]):int(combined.shape[1])]
+    trainLabels, validLabels, testLabels = combined[784:,:int(0.7*combined.shape[1])], combined[784:,int(0.7*combined.shape[1]):int(0.9*combined.shape[1])], combined[784:,int(0.9*combined.shape[1]):int(combined.shape[1])]
+    return trainData, validData, testData, trainLabels, validLabels, testLabels
+
 
 #Helper function to display an MNIST data point.
 def display(x):
@@ -209,7 +220,7 @@ def grad_descent(NLL, grad_NLL_W, grad_NLL_b, x, y, init_w, init_b, alpha, itera
         prev_w=w.copy()
         prev_b = b.copy()
         w-=alpha*(grad_NLL_W(y, compute(x,w,b),x))
-        b-=alpha*(grad_NLL_b(y,compute(x,w,b)))
+        b-=alpha*(grad_NLL_b(y, compute(x,w,b)))
         if iter % 100 == 0:
             print("Iteration: " + str(iter))
             print("Cost: "+str(NLL(y,compute(x,w,b))))
@@ -219,17 +230,30 @@ def grad_descent(NLL, grad_NLL_W, grad_NLL_b, x, y, init_w, init_b, alpha, itera
 #-------------------------------Part 4 Test------------------------------------------------------#
 
 def testPart4():
+    
     #Load data
     M = loadData()
     #Initialize training data
     data, labels = loadTrain(M)
-    print(data.shape)
-    print(labels.shape)
+    trainData, validData, testData, trainLabels, validLabels, testLabels = split(data,labels)
+    #trainLabels, validLabels, testLabels = np.argmax(trainLabels,axis=0), np.argmax(validLabels,axis=0), np.argmax(testLabels,axis=0)
+    np.random.seed(1)
+    W = np.random.normal(0.0,0.2,(784,10))
+    W.astype(double)
+    b = np.random.normal(0.0,0.2,(10,1))
+    W.astype(double)
     
-    W = np.random.normal(0,0.2,(784,10))
-    b = np.random.normal(0,0.2,(10,1))
-    
-    w_train, b_train = grad_descent(NLL, grad_NLL_W, grad_NLL_b, data, labels, W, b, 0.000001, 30000)
+    w_train, b_train = grad_descent(NLL, grad_NLL_W, grad_NLL_b, trainData, trainLabels, W, b, 0.000001, 1000)
+
+    trainPred = compute(trainData, w_train,b_train)
+    #trainPred = np.argmax(trainPred,axis = 0)
+    print("Training accuracy: " + str(np.sum(np.equal(trainPred,trainLabels))/(float(trainData.shape[1]))))
+
+    validPred = compute(validData,w_train,b_train)
+    #validPred = np.argmax(validPred,axis = 0)
+
+    print("Validation accuracy: " + str(np.sum(np.equal(validPred,validLabels))/(float(validData.shape[1]))))
+
 
 #Main Function
 
