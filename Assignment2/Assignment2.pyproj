@@ -24,6 +24,7 @@
   <ItemGroup>
     <Compile Include="Assignment_2_github3.py" />
     <Compile Include="Assignment_2_momentumGD.py" />
+    <Compile Include="Assignment_2_momentumGD2.py" />
     <Compile Include="digits.py" />
   </ItemGroup>
   <ItemGroup>

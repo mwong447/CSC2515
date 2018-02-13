@@ -39,13 +39,13 @@ def loadTrain(M):
     return training, labels
 
 #Helper function to split data
-def split(data,labels):
-    np.random.seed(1)
+def split(data,labels, percentage):
     combined = np.vstack((data,labels))
     np.random.shuffle(combined)
-    trainData, validData, testData = combined[:-10,:int(0.7*combined.shape[1])], combined[:-10,int(0.7*combined.shape[1]):int(0.9*combined.shape[1])], combined[:-10,int(0.9*combined.shape[1]):int(combined.shape[1])]
-    trainLabels, validLabels, testLabels = combined[784:,:int(0.7*combined.shape[1])], combined[784:,int(0.7*combined.shape[1]):int(0.9*combined.shape[1])], combined[784:,int(0.9*combined.shape[1]):int(combined.shape[1])]
-    return trainData, validData, testData, trainLabels, validLabels, testLabels
+    trainData, validData = combined[:-10,:int(percentage*combined.shape[1])-1], combined[:-10,int(percentage*combined.shape[1]):int(combined.shape[1])]
+    trainLabels, validLabels = combined[784:,:int(percentage*combined.shape[1])-1], combined[784:,int(percentage*combined.shape[1]):int(combined.shape[1])]
+        
+    return trainData, validData, trainLabels, validLabels
 
 
 #Helper function to display an MNIST data point.
@@ -244,14 +244,14 @@ def testPart4():
     M = loadData()
     #Initialize training data
     data, labels = loadTrain(M)
-    trainData, validData, testData, trainLabels, validLabels, testLabels = split(data,labels)
-    #trainLabels, validLabels, testLabels = np.argmax(trainLabels,axis=0), np.argmax(validLabels,axis=0), np.argmax(testLabels,axis=0)
-    W = np.random.normal(0.0,0.05,(784,10))
+    trainData, validData, trainLabels, validLabels = split(data,labels, 0.8)
+    
+    W = np.random.normal(0.0,0.2,(784,10))
     W.astype(double)
-    b = np.zeros((10,1))
+    b = np.random.normal(0, 0.2,(10,1))
     b.astype(double)
     
-    w_train, b_train = grad_descent(NLL, grad_NLL_W, grad_NLL_b, trainData, trainLabels, W, b, 0.0001, 1000)
+    w_train, b_train = grad_descent(NLL, grad_NLL_W, grad_NLL_b, trainData, trainLabels, W, b, 0.00001, 1000)
 
     trainPred = compute(trainData, w_train,b_train)
     trainPred = np.argmax(trainPred,axis = 0)

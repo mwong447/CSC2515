@@ -318,15 +318,6 @@ def grad_descent_v(NLL, grad_NLL_W, grad_NLL_b, x, y, init_w, init_b, alpha, ite
 
 #-------------------------------Part 4 Test------------------------------------------------------#
 
-snapshot=pickle.load(open("snapshot50.pkl", "rb"), encoding="latin1")
-
-W0 = snapshot["W0"]
-b0 = snapshot["b0"].reshape((300,1))
-W1 = snapshot["W1"]
-b1 = snapshot["b1"].reshape((10,1))
-
-W_test=dot(W0,W1)
-
 
 def testPart4():
     #Load data
@@ -368,7 +359,7 @@ def main():
     #testPart2()
     #testPart3()
     #test()
-    #testPart4()
+    testPart4()
     #testPart3()
     
     
