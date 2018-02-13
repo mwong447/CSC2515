@@ -45,13 +45,20 @@ def loadTrain(M):
     training = training/255.0
     return training, labels
 
-def traintestsplit(training,labels):
-    Full=np.vstack([training,labels])
+def traintestsplit(data_,labels_):
+    Full=np.vstack([data_,labels_])
     Full=Full.T
-    np.shuffle(Full)
+    np.random.seed(1)
+    np.random.shuffle(Full)
     Full=Full.T
     Labels_=Full[784:,:]
-    Data_=Full[0:]
+    Data_=Full[0:784,:]
+    train_x=Data_[:,0:42000]
+    train_y=Labels_[:,0:42000]
+    test_x=Data_[:,42000:]
+    test_y=Labels_[:,42000:]
+    return train_x,train_y,test_x,test_y
+
 
 #Helper function to display an MNIST data point.
 def display(x):
@@ -328,7 +335,7 @@ b1 = snapshot["b1"].reshape((10,1))
 W_test=dot(W0,W1)
 
 
-def testPart4():
+def testPart4_a():
     #Load data
     M = loadData()
     #Initialize training data
@@ -353,14 +360,37 @@ def testPart4():
     Pred = np.argmax(Pred,axis = 0)
     labels = np.argmax(labels,axis = 0)
     print("Training accuracy: " + str(np.sum(np.equal(Pred,labels))/(float(data.shape[1]))))
-
-    #validPred = compute(validData,w_train,b_train)
-    #validPred = np.argmax(validPred,axis = 0)
-    #validLabels = np.argmax(validLabels,axis = 0)
-
-    #print("Validation accuracy: " + str(np.sum(np.equal(validPred,validLabels))/(float(validData.shape[1]))))
    
+def testPart4_b():
+    #Load data
+    M = loadData()
+    #Initialize training data
+    data, labels = loadTrain(M)
     
+    train_x,train_y,test_x,test_y=traintestsplit(data,labels)
+    
+    print(data.shape)
+    print(labels.shape)
+    
+    np.random.seed(seed=1)
+    W = np.random.normal(0,0.2,(784,10))
+    b = np.random.normal(0,0.2,(10,1))
+
+    
+    w_train, b_train = grad_descent_m(NLL, grad_NLL_W, grad_NLL_b, train_x, train_y, W, b, 0.00001, 500)
+
+    trainPred = compute(train_x, w_train,b_train)
+    trainPred = np.argmax(trainPred,axis = 0)
+    trainLabels = np.argmax(train_y,axis = 0)
+    print("Training accuracy: " + str(np.sum(np.equal(trainPred,trainLabels))/(float(train_x.shape[1]))))
+
+    validPred = compute(test_x,w_train,b_train)
+    validPred = np.argmax(validPred,axis = 0)
+    validLabels = np.argmax(test_y,axis = 0)
+
+    print("Validation accuracy: " + str(np.sum(np.equal(validPred,validLabels))/(float(test_x.shape[1]))))
+
+
 #Main Function
 
 def main():
