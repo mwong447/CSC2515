@@ -41,7 +41,6 @@ def loadTrain(M):
 
 #Helper function to split data
 def split(data,labels):
-    np.random.seed(1)
     combined = np.vstack((data,labels))
     np.random.shuffle(combined)
     trainData, validData, testData = combined[:-10,:int(0.7*combined.shape[1])], combined[:-10,int(0.7*combined.shape[1]):int(0.9*combined.shape[1])], combined[:-10,int(0.9*combined.shape[1]):int(combined.shape[1])]
@@ -54,9 +53,9 @@ def display(x):
     imshow(x.reshape((28,28)),cmap = cm.gray)
     show()
 
-#Softmax function
+#Provided Softmax function
 def softmax(y):
-    return np.exp(y)/np.tile(np.sum(np.exp(y),0), (len(y),1))
+    return exp(y)/tile(sum(exp(y),0), (len(y),1))
 
 #Tanh function
 def tanh(y,W,b):
@@ -64,7 +63,7 @@ def tanh(y,W,b):
 
 #Negative log-loss
 def NLL(y,p):
-    return -np.sum(y*np.log(softmax(p)))
+    return -sum(y*log(softmax(p)))
 
 #Forward propagation
 def forward(x, W0, b0, W1, b1):
@@ -73,10 +72,6 @@ def forward(x, W0, b0, W1, b1):
     output = softmax(L1)
     return L0, L1, output
 
-#Incomplete function for computing the gradient of the cross-entropy cost function w.r.t the parameters of a neural network
-def deriv_multilayer(W0, b0, W1, b1, x, L1, y,y_):
-    dCdL1 = y-y_
-    dCdW1 = np.dot(L0, dCdL1.T)
 
 #-------------------------------Test Code Implementation------------------------------------------------------#
 def test():
@@ -220,7 +215,7 @@ def grad_descent(NLL, grad_NLL_W, grad_NLL_b, x, y, init_w, init_b, alpha, itera
         prev_w=w.copy()
         prev_b = b.copy()
         w-=alpha*(grad_NLL_W(y, compute(x,w,b),x))
-        b-=alpha*(grad_NLL_b(y, compute(x,w,b)))
+        b-=alpha*np.sum(np.transpose((grad_NLL_W(y, compute(x,w,b),x))),axis=1,keepdims = True)
         if iter % 100 == 0:
             print("Iteration: " + str(iter))
             print("Cost: "+str(NLL(y,compute(x,w,b))))
@@ -237,20 +232,21 @@ def testPart4():
     data, labels = loadTrain(M)
     trainData, validData, testData, trainLabels, validLabels, testLabels = split(data,labels)
     #trainLabels, validLabels, testLabels = np.argmax(trainLabels,axis=0), np.argmax(validLabels,axis=0), np.argmax(testLabels,axis=0)
-    np.random.seed(1)
-    W = np.random.normal(0.0,0.2,(784,10))
+    W = np.random.normal(0.0,0.1,(784,10))
     W.astype(double)
-    b = np.random.normal(0.0,0.2,(10,1))
+    b = np.random.normal(1.0,0.2,(10,1))
     W.astype(double)
     
     w_train, b_train = grad_descent(NLL, grad_NLL_W, grad_NLL_b, trainData, trainLabels, W, b, 0.000001, 1000)
 
     trainPred = compute(trainData, w_train,b_train)
-    #trainPred = np.argmax(trainPred,axis = 0)
+    trainPred = np.argmax(trainPred,axis = 0)
+    trainLabels = np.argmax(trainLabels,axis = 0)
     print("Training accuracy: " + str(np.sum(np.equal(trainPred,trainLabels))/(float(trainData.shape[1]))))
 
     validPred = compute(validData,w_train,b_train)
-    #validPred = np.argmax(validPred,axis = 0)
+    validPred = np.argmax(validPred,axis = 0)
+    validLabels = np.argmax(validLabels,axis = 0)
 
     print("Validation accuracy: " + str(np.sum(np.equal(validPred,validLabels))/(float(validData.shape[1]))))
 
@@ -258,6 +254,7 @@ def testPart4():
 #Main Function
 
 def main():
+    np.random.seed(1)
     #testPart2()
     #testPart3()
     #test()
