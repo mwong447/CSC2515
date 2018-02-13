@@ -36,11 +36,11 @@ def loadTrain(M):
         i+=1
     training = np.transpose(training)
     training = training/255.0
-    training.astype(double)
     return training, labels
 
 #Helper function to split data
 def split(data,labels):
+    np.random.seed(1)
     combined = np.vstack((data,labels))
     np.random.shuffle(combined)
     trainData, validData, testData = combined[:-10,:int(0.7*combined.shape[1])], combined[:-10,int(0.7*combined.shape[1]):int(0.9*combined.shape[1])], combined[:-10,int(0.9*combined.shape[1]):int(combined.shape[1])]
@@ -63,7 +63,7 @@ def tanh(y,W,b):
 
 #Negative log-loss
 def NLL(y,p):
-    return -sum(y*log(softmax(p)))
+    return -np.sum(y*np.log(softmax(p)))
 
 #Forward propagation
 def forward(x, W0, b0, W1, b1):
@@ -215,7 +215,7 @@ def grad_descent(NLL, grad_NLL_W, grad_NLL_b, x, y, init_w, init_b, alpha, itera
         prev_w=w.copy()
         prev_b = b.copy()
         w-=alpha*(grad_NLL_W(y, compute(x,w,b),x))
-        b-=alpha*np.sum(np.transpose((grad_NLL_W(y, compute(x,w,b),x))),axis=1,keepdims = True)
+        b-=alpha*(grad_NLL_b(y,compute(x,w,b)))
         if iter % 100 == 0:
             print("Iteration: " + str(iter))
             print("Cost: "+str(NLL(y,compute(x,w,b))))
@@ -225,7 +225,6 @@ def grad_descent(NLL, grad_NLL_W, grad_NLL_b, x, y, init_w, init_b, alpha, itera
 #-------------------------------Part 4 Test------------------------------------------------------#
 
 def testPart4():
-    
     #Load data
     M = loadData()
     #Initialize training data
