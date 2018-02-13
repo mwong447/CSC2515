@@ -45,18 +45,17 @@ def loadTrain(M):
     training = training/255.0
     return training, labels
 
-def traintestsplit(data_,labels_):
+def traintestsplit(data_,labels_,ratio):
     Full=np.vstack([data_,labels_])
-    Full=Full.T
+    size_=int(data_.shape[1]*ratio)
     np.random.seed(1)
-    np.random.shuffle(Full)
-    Full=Full.T
+    np.random.shuffle(Full.T)
     Labels_=Full[784:,:]
     Data_=Full[0:784,:]
-    train_x=Data_[:,0:42000]
-    train_y=Labels_[:,0:42000]
-    test_x=Data_[:,42000:]
-    test_y=Labels_[:,42000:]
+    train_x=Data_[:,0:size_]
+    train_y=Labels_[:,0:size_]
+    test_x=Data_[:,size_:]
+    test_y=Labels_[:,size_:]
     return train_x,train_y,test_x,test_y
 
 
@@ -367,7 +366,7 @@ def testPart4_b():
     #Initialize training data
     data, labels = loadTrain(M)
     
-    train_x,train_y,test_x,test_y=traintestsplit(data,labels)
+    train_x,train_y,test_x,test_y=traintestsplit(data,labels,0.7)
     
     print(data.shape)
     print(labels.shape)
