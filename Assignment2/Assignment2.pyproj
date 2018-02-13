@@ -22,6 +22,8 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Assignment_2_github3.py" />
+    <Compile Include="Assignment_2_momentumGD.py" />
     <Compile Include="digits.py" />
   </ItemGroup>
   <ItemGroup>

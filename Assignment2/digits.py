@@ -63,7 +63,7 @@ def tanh(y,W,b):
 
 #Negative log-loss
 def NLL(y,p):
-    return -np.sum(y*np.log(softmax(p)))/(float(y.shape[1]))
+    return -np.sum(y*np.log(softmax(p)))
 
 #Forward propagation
 def forward(x, W0, b0, W1, b1):
@@ -136,7 +136,7 @@ def grad_NLL_W(y,o,layer):
     p = softmax(o)
     grad = p - y
     grad = np.matmul(grad,np.transpose(layer))
-    return np.transpose(grad)/len(p)
+    return np.transpose(grad)
 
 
 #Computes the gradient of negative log-loss function for biases only
@@ -144,7 +144,7 @@ def grad_NLL_b(y,o):
     p = softmax(o)
     grad = p-y
     grad = np.sum(grad,axis=1,keepdims = True)
-    return grad/len(p)
+    return grad
 
 #-------------------------------Part 3 Test------------------------------------------------------#
 
@@ -204,6 +204,9 @@ def testPart3():
  
 #-------------------------------Part 4 Implementation------------------------------------------------------#
 def grad_descent(NLL, grad_NLL_W, grad_NLL_b, x, y, init_w, init_b, alpha, iterations):
+    iters = list()
+    costy = list()
+    
     EPS = 1e-5
     prev_w = init_w-10*EPS
     prev_b = init_b-10*EPS
@@ -219,7 +222,19 @@ def grad_descent(NLL, grad_NLL_W, grad_NLL_b, x, y, init_w, init_b, alpha, itera
         if iter % 100 == 0:
             print("Iteration: " + str(iter))
             print("Cost: "+str(NLL(y,compute(x,w,b))))
+            cost_i = NLL(y,compute(x,w,b))
+            iters.append(iter)
+            costy.append(cost_i)
         iter += 1
+
+    x_plot = iters
+    y1_plot = costy
+    plt.xlabel("Iterations")
+    plt.ylabel("Log Loss")
+    plt.title("Iterations vs. Log-loss")
+    plt.plot(x_plot, y1_plot, 'r--')
+    plt.show()
+
     return w, b
 
 #-------------------------------Part 4 Test------------------------------------------------------#
@@ -248,6 +263,47 @@ def testPart4():
     validLabels = np.argmax(validLabels,axis = 0)
 
     print("Validation accuracy: " + str(np.sum(np.equal(validPred,validLabels))/(float(validData.shape[1]))))
+
+#-------------------------------Part 5 Implementation------------------------------------------------------#
+def grad_descent_w(NLL, grad_NLL_W, grad_NLL_b, x, y, init_w, init_b, alpha, iterations):
+    iters = list()
+    costy = list()
+    
+    EPS = 1e-5
+    prev_w = init_w-10*EPS
+    prev_b = init_b-10*EPS
+    w = init_w.copy()
+    b = init_b.copy()
+    max_iter = iterations
+    iter = 0
+
+    v = np.zeros((784,10))
+    momentum_rate = 0.5
+
+    while np.linalg.norm(w-prev_w) > EPS and iter < max_iter and np.linalg.norm(b-prev_b) > EPS:
+        prev_w=w.copy()
+        prev_b = b.copy()
+        w-=alpha*(grad_NLL_W(y, compute(x,w,b),x))
+        mv = np.multiply(momentum_rate,v)
+        v = np.add(mv, w)
+        w-= v
+        b-=alpha*(grad_NLL_b(y,compute(x,w,b)))
+        if iter % 100 == 0:
+            print("Iteration: " + str(iter))
+            print("Cost: "+str(NLL(y,compute(x,w,b))))
+            cost_i = NLL(y,compute(x,w,b))
+            iters.append(iter)
+            costy.append(cost_i)
+        iter += 1
+
+    x_plot = iters
+    y1_plot = costy
+    plt.xlabel("Iterations")
+    plt.ylabel("Log Loss")
+    plt.title("Iterations vs. Log-loss")
+    plt.plot(x_plot, y1_plot, 'r--')
+    plt.show()
+    return w, b
 
 
 #Main Function
