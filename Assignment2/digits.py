@@ -63,7 +63,7 @@ def tanh(y,W,b):
 
 #Negative log-loss
 def NLL(y,p):
-    return -np.sum(y*np.log(softmax(p)))
+    return -np.sum(y*np.log(softmax(p)))/(float(y.shape[1]))
 
 #Forward propagation
 def forward(x, W0, b0, W1, b1):
@@ -136,7 +136,7 @@ def grad_NLL_W(y,o,layer):
     p = softmax(o)
     grad = p - y
     grad = np.matmul(grad,np.transpose(layer))
-    return np.transpose(grad)
+    return np.transpose(grad)/len(p)
 
 
 #Computes the gradient of negative log-loss function for biases only
@@ -144,7 +144,7 @@ def grad_NLL_b(y,o):
     p = softmax(o)
     grad = p-y
     grad = np.sum(grad,axis=1,keepdims = True)
-    return grad
+    return grad/len(p)
 
 #-------------------------------Part 3 Test------------------------------------------------------#
 
@@ -231,12 +231,12 @@ def testPart4():
     data, labels = loadTrain(M)
     trainData, validData, testData, trainLabels, validLabels, testLabels = split(data,labels)
     #trainLabels, validLabels, testLabels = np.argmax(trainLabels,axis=0), np.argmax(validLabels,axis=0), np.argmax(testLabels,axis=0)
-    W = np.random.normal(0.0,0.1,(784,10))
+    W = np.random.normal(0.0,0.05,(784,10))
     W.astype(double)
-    b = np.random.normal(1.0,0.2,(10,1))
-    W.astype(double)
+    b = np.zeros((10,1))
+    b.astype(double)
     
-    w_train, b_train = grad_descent(NLL, grad_NLL_W, grad_NLL_b, trainData, trainLabels, W, b, 0.000001, 1000)
+    w_train, b_train = grad_descent(NLL, grad_NLL_W, grad_NLL_b, trainData, trainLabels, W, b, 0.0001, 1000)
 
     trainPred = compute(trainData, w_train,b_train)
     trainPred = np.argmax(trainPred,axis = 0)
