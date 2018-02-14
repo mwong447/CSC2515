@@ -41,8 +41,10 @@ def loadTrain(M):
 #Helper function to split data
 def split(data,labels, percentage):
     combined = np.vstack((data,labels))
+    combined = np.transpose(combined)
     np.random.seed(1)
     np.random.shuffle(combined)
+    combined = np.transpose(combined)
     trainData, validData = combined[:-10,:int(percentage*combined.shape[1])-1], combined[:-10,int(percentage*combined.shape[1]):int(combined.shape[1])]
     trainLabels, validLabels = combined[784:,:int(percentage*combined.shape[1])-1], combined[784:,int(percentage*combined.shape[1]):int(combined.shape[1])]
         
@@ -219,16 +221,12 @@ def grad_descent(NLL, grad_NLL_W, grad_NLL_b, x, y, init_w, init_b, alpha, itera
         prev_b = b.copy()
         w-=alpha*(grad_NLL_W(y, compute(x,w,b),x))
         b-=alpha*(grad_NLL_b(y,compute(x,w,b)))
-        if iter % 20 == 0:
+        if iter % 10 == 0:
             cost_i = NLL(y,compute(x,w,b))
             iters.append(iter)
             costy.append(cost_i)
             print("Iteration: " + str(iter))
             print("Cost: "+str(cost_i))
-            trainPred_t = compute(x, w, b)
-            trainPred_t = np.argmax(trainPred_t,axis = 0)
-            trainLabels_t = np.argmax(y,axis = 0)
-            print("Training accuracy: " + str(np.sum(np.equal(trainPred_t,trainLabels_t))/(float(x.shape[1]))))
         iter += 1
 
     x_plot = iters
@@ -255,18 +253,18 @@ def testPart4():
     W = np.random.normal(0.0,0.1,(784,10))
     b = np.random.normal(0, 0.1,(10,1))
         
-    w_train, b_train = grad_descent(NLL, grad_NLL_W, grad_NLL_b, trainData, trainLabels, W, b, 0.00001, 1000)
+    w_train, b_train = grad_descent(NLL, grad_NLL_W, grad_NLL_b, trainData, trainLabels, W, b, 0.00001, 400)
 
     trainPred = compute(trainData, w_train,b_train)
     trainPred = np.argmax(trainPred,axis = 0)
     trainLabels = np.argmax(trainLabels,axis = 0)
-    print("Training accuracy: " + str(np.sum(np.equal(trainPred,trainLabels))/(float(trainData.shape[1]))))
+    print("Training accuracy: " + str(np.sum(np.equal(trainPred,trainLabels))/(float(data.shape[1]))))
 
-    validPred = compute(validData,w_train,b_train)
-    validPred = np.argmax(validPred,axis = 0)
-    validLabels = np.argmax(validLabels,axis = 0)
+    #validPred = compute(validData,w_train,b_train)
+    #validPred = np.argmax(validPred,axis = 0)
+    #validLabels = np.argmax(validLabels,axis = 0)
 
-    print("Validation accuracy: " + str(np.sum(np.equal(validPred,validLabels))/(float(validData.shape[1]))))
+    #print("Validation accuracy: " + str(np.sum(np.equal(validPred,validLabels))/(float(validData.shape[1]))))
 
 #-------------------------------Part 5 Implementation------------------------------------------------------#
 def grad_descent_w(NLL, grad_NLL_W, grad_NLL_b, x, y, init_w, init_b, alpha, iterations):
