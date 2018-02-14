@@ -45,8 +45,8 @@ def split(data,labels, percentage):
     np.random.seed(1)
     np.random.shuffle(combined)
     combined = np.transpose(combined)
-    trainData, validData = combined[:-10,:int(percentage*combined.shape[1])-1], combined[:-10,int(percentage*combined.shape[1]):int(combined.shape[1])]
-    trainLabels, validLabels = combined[784:,:int(percentage*combined.shape[1])-1], combined[784:,int(percentage*combined.shape[1]):int(combined.shape[1])]
+    trainData, validData = combined[:-10,:int(percentage*combined.shape[1])], combined[:-10,int(percentage*combined.shape[1]):int(combined.shape[1])]
+    trainLabels, validLabels = combined[784:,:int(percentage*combined.shape[1])], combined[784:,int(percentage*combined.shape[1]):int(combined.shape[1])]
         
     return trainData, validData, trainLabels, validLabels
 
@@ -258,16 +258,16 @@ def testPart4():
     trainPred = compute(trainData, w_train,b_train)
     trainPred = np.argmax(trainPred,axis = 0)
     trainLabels = np.argmax(trainLabels,axis = 0)
-    print("Training accuracy: " + str(np.sum(np.equal(trainPred,trainLabels))/(float(data.shape[1]))))
+    print("Training accuracy: " + str(np.sum(np.equal(trainPred,trainLabels))/(float(trainPred.shape[1]))))
 
-    #validPred = compute(validData,w_train,b_train)
-    #validPred = np.argmax(validPred,axis = 0)
-    #validLabels = np.argmax(validLabels,axis = 0)
+    validPred = compute(validData,w_train,b_train)
+    validPred = np.argmax(validPred,axis = 0)
+    validLabels = np.argmax(validLabels,axis = 0)
 
-    #print("Validation accuracy: " + str(np.sum(np.equal(validPred,validLabels))/(float(validData.shape[1]))))
+    print("Validation accuracy: " + str(np.sum(np.equal(validPred,validLabels))/(float(validPred.shape[1]))))
 
 #-------------------------------Part 5 Implementation------------------------------------------------------#
-def grad_descent_w(NLL, grad_NLL_W, grad_NLL_b, x, y, init_w, init_b, alpha, iterations):
+def grad_descent_m(NLL, grad_NLL_W, grad_NLL_b, x, y, init_w, init_b, alpha, iterations):
     iters = list()
     costy = list()
     
@@ -285,9 +285,9 @@ def grad_descent_w(NLL, grad_NLL_W, grad_NLL_b, x, y, init_w, init_b, alpha, ite
     while np.linalg.norm(w-prev_w) > EPS and iter < max_iter and np.linalg.norm(b-prev_b) > EPS:
         prev_w=w.copy()
         prev_b = b.copy()
-        w-=alpha*(grad_NLL_W(y, compute(x,w,b),x))
+        grad_desc = alpha*(grad_NLL_W(y, compute(x,w,b),x))
         mv = np.multiply(momentum_rate,v)
-        v = np.add(mv, w)
+        v = np.add(mv, grad_desc)
         w-= v
         b-=alpha*(grad_NLL_b(y,compute(x,w,b)))
         if iter % 100 == 0:
