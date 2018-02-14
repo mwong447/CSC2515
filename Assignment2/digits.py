@@ -41,6 +41,7 @@ def loadTrain(M):
 #Helper function to split data
 def split(data,labels, percentage):
     combined = np.vstack((data,labels))
+    np.random.seed(1)
     np.random.shuffle(combined)
     trainData, validData = combined[:-10,:int(percentage*combined.shape[1])-1], combined[:-10,int(percentage*combined.shape[1]):int(combined.shape[1])]
     trainLabels, validLabels = combined[784:,:int(percentage*combined.shape[1])-1], combined[784:,int(percentage*combined.shape[1]):int(combined.shape[1])]
@@ -124,7 +125,7 @@ def testPart2():
     train = loadTrain(M)
     #Testing computation function
     #Initialize weights and bias to random normal variables
-    W = np.random.normal(0.0,0.2,(784,10))
+    W = np.random.normal(0.0,0.1,(784,10))
     b = np.random.normal(0,0.1,(10,1))
     hypothesis = compute(train,W,b)
     print(softmax(hypothesis))
@@ -149,7 +150,6 @@ def grad_NLL_b(y,o):
 #-------------------------------Part 3 Test------------------------------------------------------#
 
 def testPart3():
-    np.random.seed(1)
     #Test gradient functionality
     y = np.zeros((10,1))
     y[1,:]=1
@@ -219,12 +219,16 @@ def grad_descent(NLL, grad_NLL_W, grad_NLL_b, x, y, init_w, init_b, alpha, itera
         prev_b = b.copy()
         w-=alpha*(grad_NLL_W(y, compute(x,w,b),x))
         b-=alpha*(grad_NLL_b(y,compute(x,w,b)))
-        if iter % 100 == 0:
-            print("Iteration: " + str(iter))
-            print("Cost: "+str(NLL(y,compute(x,w,b))))
+        if iter % 20 == 0:
             cost_i = NLL(y,compute(x,w,b))
             iters.append(iter)
             costy.append(cost_i)
+            print("Iteration: " + str(iter))
+            print("Cost: "+str(cost_i))
+            trainPred_t = compute(x, w, b)
+            trainPred_t = np.argmax(trainPred_t,axis = 0)
+            trainLabels_t = np.argmax(y,axis = 0)
+            print("Training accuracy: " + str(np.sum(np.equal(trainPred_t,trainLabels_t))/(float(x.shape[1]))))
         iter += 1
 
     x_plot = iters
@@ -245,12 +249,12 @@ def testPart4():
     #Initialize training data
     data, labels = loadTrain(M)
     trainData, validData, trainLabels, validLabels = split(data,labels, 0.8)
+    print(trainData.shape)
+    print(trainLabels.shape)
     
-    W = np.random.normal(0.0,0.2,(784,10))
-    W.astype(double)
-    b = np.random.normal(0, 0.2,(10,1))
-    b.astype(double)
-    
+    W = np.random.normal(0.0,0.1,(784,10))
+    b = np.random.normal(0, 0.1,(10,1))
+        
     w_train, b_train = grad_descent(NLL, grad_NLL_W, grad_NLL_b, trainData, trainLabels, W, b, 0.00001, 1000)
 
     trainPred = compute(trainData, w_train,b_train)
