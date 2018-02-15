@@ -284,6 +284,9 @@ def grad_descent_6(x, y, init_w, init_b, alpha, iterations): #,WW
     
     w1=init_w[490,3].copy() #these are the only weights to be changed
     w2=init_w[491,3].copy()
+
+    w1+=0.2
+    w2-=0.2
     
     Weights = list()
     Weights.append((w1, w2))  
@@ -316,9 +319,36 @@ def grad_descent_6(x, y, init_w, init_b, alpha, iterations): #,WW
             print("Iteration: " + str(iter))
             print("Cost: "+str(cost_i))
         iter += 1
-
-
+        
     return Weights
+
+"""Produce a contour plot of the cost function, when the weights w1 and w2 are allowed to vary around the values 
+that you obtained in Part 5. 
+Plot the contour of the cost function. The cost function will be a function of the two weights. 
+The two weights w1 and w2 should vary around the value obtained in part 5. Label your axes"""
+
+def Weights_6():
+
+    w1_=w_train[490,3].copy()
+    w2_=w_train[491,3].copy()
+     
+    Weights_a = list()
+
+    w1_-=0.1
+    w2_-=0.1
+    
+    Weights_a.append((w1_, w2_))
+   
+    i=0
+    for i in range (0,20):
+       w1_+=0.01
+       w2_+=0.01
+       Weights_a.append((w1_, w2_))
+       i+=1
+       
+    return Weights_a
+
+#Inital Weights 
 
 #-------------------------------Part 4 Test------------------------------------------------------#
 
