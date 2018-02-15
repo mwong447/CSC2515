@@ -94,9 +94,10 @@ def get_loss(w1,w2):
     #x=trainData
     #np.random.seed(1)
     #W = np.random.normal(0.0,0.2,(784,10))
-    w_train[490,3]=w1
-    w_train[491,3]=w2
-    p=compute(x,w_train,b_train)
+    w_train_=w_train.copy()
+    w_train_[490,3]=w1
+    w_train_[491,3]=w2
+    p=compute(x,w_train_,b_train)
     return -np.sum(y*np.log(softmax(p)))
 
 #Forward propagation
@@ -285,8 +286,8 @@ def grad_descent_6(x, y, init_w, init_b, alpha, iterations): #,WW
     w1=init_w[490,3].copy() #these are the only weights to be changed
     w2=init_w[491,3].copy()
 
-    w1+=0.2
-    w2-=0.2
+    w1+=0.09
+    w2-=0.09
     
     Weights = list()
     Weights.append((w1, w2))  
@@ -372,7 +373,7 @@ def testPart4():
     W = np.random.normal(0.0,0.2,(784,10))
     b = np.random.normal(0, 0.2,(10,1))
         
-    w_train, b_train = grad_descent_w(NLL, grad_NLL_W, grad_NLL_b, trainData, trainLabels, W, b, 0.00001, 300)
+    w_train, b_train = grad_descent_w(NLL, grad_NLL_W, grad_NLL_b, trainData, trainLabels, W, b, 0.00001, 500)
 
     trainPred = compute(trainData, w_train,b_train)
     trainPred = np.argmax(trainPred,axis = 0)
@@ -436,8 +437,8 @@ def Plot_Contour():
     gd_traj = Weights
     #gd_traj = [(init_w1, init_w2), (step1_w1, step1_w2), ...]
     #mo_traj = [(init_w1, init_w2), (step1_w1, step1_w2), ...]
-    w1s = np.arange(-0.37, -0.34, 0.01)
-    w2s = np.arange(-0.47, -0.44, 0.01)
+    w1s = np.arange(-0.55, -0.01, 0.05)
+    w2s = np.arange(-0.55, -0.01, 0.05)
     w1z, w2z = np.meshgrid(w1s, w2s)
     C = np.zeros([w1s.size, w2s.size])
     for i, w1 in enumerate(w1s):
@@ -454,6 +455,10 @@ def Plot_Contour():
 
 def main():
     np.random.seed(1)
+    #Changed Function to return all weights AND used small TRAIN
+    x,y,w_train,b_train=testPart4()
+    Weights=grad_descent_6(x,y,w_train,b_train,0.01,20)
+    Plot_Contour()
     #testPart2()
     #testPart3()
     #test()
