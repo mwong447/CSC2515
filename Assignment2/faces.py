@@ -3,7 +3,7 @@ from scipy.misc import imread
 from scipy.misc import imshow
 from scipy.misc import imresize
 from scipy.misc import imsave
-
+import urllib
 
 
 def getActors(X,Y=None):
@@ -43,7 +43,6 @@ def getCroppedData(list,file, partNumber):
                             img = imread(urllib.request.urlopen(url))
                             img = img[y1:y2,x1:x2]
                             img = img/255.0
-                            img = rgb2gray(img)
 
                             img = imresize(img,[32,32],'nearest')
                             print("Attempting to save file to disk")
