@@ -323,6 +323,65 @@ def grad_descent_6(x, y, init_w, init_b, alpha, iterations): #,WW
         
     return Weights
 
+
+def grad_descent_6b(x, y, init_w, init_b, alpha, iterations): #,WW
+    
+    #gd_traj = [(init_w1, init_w2), (step1_w1, step1_w2), ...]
+    
+    v = np.zeros((784,10))
+    momentum_rate = 0.5
+    v[:,:]=0.000001 #Initialize
+
+    EPS = 1e-5
+    prev_w = init_w-10*EPS
+    prev_b = init_b-10*EPS
+    w = init_w.copy()
+    b = init_b.copy()
+    
+    w1=init_w[490,3].copy() #these are the only weights to be changed
+    w2=init_w[491,3].copy()
+
+    w1+=0.09
+    w2-=0.09
+    
+    Weights = list()
+    Weights.append((w1, w2))  
+    print (type(Weights))
+    
+    max_iter = iterations
+    iter = 0
+    #while np.linalg.norm(w-prev_w) > EPS and iter < max_iter and np.linalg.norm(b-prev_b) > EPS:
+    while iter < max_iter: #and np.linalg.norm(b-prev_b) > EPS:
+        prev_w=w.copy()
+        prev_b = b.copy()
+        grad_desc=alpha*(grad_NLL_W(y, compute(x,w,b),x))
+        mv = np.multiply(momentum_rate,v)
+        v = np.add(mv, grad_desc)
+        w-= v
+        #b-=alpha*(grad_NLL_b(y,compute(x,w,b)))
+        
+        #Update Weights
+        w1=w[490,3].copy()
+        w2=w[491,3].copy()
+        Weights.append((w1, w2)) 
+        
+        #Reset - Keeping all other Weights constant
+        w=prev_w
+   
+        w[490,3]=w1
+        w[491,3]=w2
+        
+        if iter % 100 == 0:
+            cost_i = NLL(y,compute(x,w,b))
+            print (type(Weights))
+            
+            print("Iteration: " + str(iter))
+            print("Cost: "+str(cost_i))
+        iter += 1
+        
+    return Weights
+
+
 """Produce a contour plot of the cost function, when the weights w1 and w2 are allowed to vary around the values 
 that you obtained in Part 5. 
 Plot the contour of the cost function. The cost function will be a function of the two weights. 
@@ -405,6 +464,7 @@ def grad_descent_w(NLL, grad_NLL_W, grad_NLL_b, x, y, init_w, init_b, alpha, ite
     iter = 0
 
     v = np.zeros((784,10))
+    v[:,:]=0.000001 #Initialize
     momentum_rate = 0.5
 
     while np.linalg.norm(w-prev_w) > EPS and iter < max_iter and np.linalg.norm(b-prev_b) > EPS:
@@ -437,8 +497,9 @@ def Plot_Contour():
     gd_traj = Weights
     #gd_traj = [(init_w1, init_w2), (step1_w1, step1_w2), ...]
     #mo_traj = [(init_w1, init_w2), (step1_w1, step1_w2), ...]
-    w1s = np.arange(-0.55, -0.01, 0.05)
-    w2s = np.arange(-0.55, -0.01, 0.05)
+    mo_traj = Weights_m
+    w1s = np.arange(-0.70, -0.01, 0.05)
+    w2s = np.arange(-0.70, -0.01, 0.05)
     w1z, w2z = np.meshgrid(w1s, w2s)
     C = np.zeros([w1s.size, w2s.size])
     for i, w1 in enumerate(w1s):
@@ -446,7 +507,7 @@ def Plot_Contour():
             C[j,i] = get_loss(w1, w2)
     CS = plt.contour(w1z, w2z, C, camp=cm.coolwarm)
     plt.plot([a for a, b in gd_traj], [b for a,b in gd_traj], 'yo-', label="No Momentum")
-    #plt.plot([a for a, b in mo_traj], [b for a,b in mo_traj], 'go-', label="Momentum")
+    plt.plot([a for a, b in mo_traj], [b for a,b in mo_traj], 'go-', label="Momentum")
     plt.legend(loc='upper left')
     plt.title('Contour plot')
 
@@ -457,7 +518,8 @@ def main():
     np.random.seed(1)
     #Changed Function to return all weights AND used small TRAIN
     x,y,w_train,b_train=testPart4()
-    Weights=grad_descent_6(x,y,w_train,b_train,0.01,20)
+    Weights=grad_descent_6(x,y,w_train,b_train,0.015,20)
+    Weights_2=grad_descent_6b(x,y,w_train,b_train,0.015,20)
     Plot_Contour()
     #testPart2()
     #testPart3()
