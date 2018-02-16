@@ -253,18 +253,18 @@ def testPart4():
     W = np.random.normal(0.0,0.1,(784,10))
     b = np.random.normal(0, 0.1,(10,1))
         
-    w_train, b_train = grad_descent(NLL, grad_NLL_W, grad_NLL_b, trainData, trainLabels, W, b, 0.00001, 400)
+    w_train, b_train = grad_descent(NLL, grad_NLL_W, grad_NLL_b, trainData, trainLabels, W, b, 0.00001, 10)
 
     trainPred = compute(trainData, w_train,b_train)
     trainPred = np.argmax(trainPred,axis = 0)
-    trainLabels = np.argmax(trainLabels,axis = 0)
-    print("Training accuracy: " + str(np.sum(np.equal(trainPred,trainLabels))/(float(trainPred.shape[1]))))
+    trainLabels = np.argmax(trainLabels, axis = 0)
+    print("Training accuracy: " + str(np.sum(np.equal(trainPred,trainLabels))/(float(trainPred.shape[0]))))
 
     validPred = compute(validData,w_train,b_train)
     validPred = np.argmax(validPred,axis = 0)
     validLabels = np.argmax(validLabels,axis = 0)
 
-    print("Validation accuracy: " + str(np.sum(np.equal(validPred,validLabels))/(float(validPred.shape[1]))))
+    print("Validation accuracy: " + str(np.sum(np.equal(validPred,validLabels))/(float(validPred.shape[0]))))
 
 #-------------------------------Part 5 Implementation------------------------------------------------------#
 def grad_descent_m(NLL, grad_NLL_W, grad_NLL_b, x, y, init_w, init_b, alpha, iterations):
