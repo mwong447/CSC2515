@@ -13,6 +13,7 @@ import os
 import pickle as pickle
 from scipy.io import loadmat
 
+
 #Load the data
 def loadData():
     M = loadmat("mnist_all.mat")
@@ -316,11 +317,6 @@ def main():
     #testPart3()
     #test()
     testPart4()
-
-    
-    
-
-
 
 
 if __name__ == "__main__":
