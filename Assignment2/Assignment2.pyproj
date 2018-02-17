@@ -26,6 +26,7 @@
     <Compile Include="Assignment_2_momentumGD.py" />
     <Compile Include="Assignment_2_momentumGD2.py" />
     <Compile Include="digits.py" />
+    <Compile Include="faces.py" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="mnist_all.mat" />
