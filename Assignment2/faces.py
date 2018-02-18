@@ -8,6 +8,12 @@ import urllib.request
 import urllib.parse
 import urllib.response
 import urllib.robotparser
+from torch.autograd import Variable
+import torch
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.io import loadmat
+
 
 #Imported code from Assignment 1 to handle FaceScrub dataset
 
@@ -21,6 +27,15 @@ def getActors(X,Y=None):
         return act
     else:
         return filename
+
+def getpictures():
+
+    location = str("cropped/")
+    if not os.path.exists(os.path.join(os.getcwd(),location)):
+        males = ['Alec Baldwin', 'Bill Hader', 'Steve Carell']
+        getCroppedData(males, "facescrub_actors.txt")
+        females = ['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon']
+        getCroppedData(females, "facescrub_actresses.txt")
 
 
 def getCroppedData(list, file):
@@ -64,16 +79,19 @@ def getCroppedData(list, file):
                     except urllib.error.ContentTooShortError as e:
                         print("Content too short")
 
+
 #Second main function
 
 
 def main():
 
-    males = ['Alec Baldwin', 'Bill Hader', 'Steve Carell']
-    getCroppedData(males, "facescrub_actors.txt")
-    females = ['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon']
-    getCroppedData(females, "facescrub_actresses.txt")
-
+    getpictures()
+    filename = os.path.join(os.getcwd(), "cropped/")
+    filename = filename + str("baldwin0.jpg")
+    test = imread(filename)
+    test = imresize(test, [32,32], 'nearest')
+    plt.imshow(test)
+    plt.show()
 
 if __name__ == "__main__":
     main()
