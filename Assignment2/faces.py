@@ -104,7 +104,6 @@ def getDataMatrix(actors):
             filename = str(file)
             if name in filename:
                 img = imread(os.path.join(directory, str(file)))
-                print(len(img.shape))
                 img = np.array(img)/255.0
                 img = img.flatten()
                 img = np.expand_dims(img, axis=1)
@@ -130,6 +129,16 @@ def getDataLabels(actors):
     return np.transpose(batch_y_s)
 
 
+def shuffle(data, labels, percentage):
+    np.random.seed(1)
+    complete = np.vstack((data, labels))
+    complete = np.transpose(complete)
+    np.random.shuffle(complete)
+    complete = np.transpose(complete)
+    trainData, validData = complete[:-6, :int(percentage*complete.shape[1])], complete[:-6, int(percentage*complete.shape[1]):int(complete.shape[1])]
+    trainLabels, validLabels = complete[3072:, :int(percentage*complete.shape[1])], complete[3072:, int(percentage*complete.shape[1]):int(complete.shape[1])]
+    return trainData, validData, trainLabels, validLabels
+
 
 # Second main function
 
@@ -142,15 +151,40 @@ def main():
     getPictures()
     X = getDataMatrix(act)
     Y = getDataLabels(act)
-    print(X.shape)
-    print(Y.shape)
+    trainData, validData, trainLabels, validLabels = shuffle(X, Y, 0.8)
+    trainData = np.transpose(trainData)
+    trainLabels = np.transpose(trainLabels)
+    validData = np.transpose(validData)
+    validLabels = np.transpose(validLabels)
+    print(trainData.shape)
+    print(validData.shape)
+    print(trainLabels.shape)
+    print(validLabels.shape)
+
     # Setting up the pytorch model
-    dim_x = 32*32
+    dim_x = 32*32*3
     dim_h = 20
     dim_out = 6
     dtype_float = torch.FloatTensor
     dtype_long = torch.LongTensor
-    model = torch.nn.Sequential(torch.nn.Linear(dim_x, dim_h), torch.nn.ReLU(), torch.nn.Linear(dim_h, dim_out))
+    model = torch.nn.Sequential(torch.nn.Linear(dim_x, dim_h), torch.nn.ReLU(), torch.nn.Linear(dim_h, dim_out),)
+    loss_func = torch.nn.CrossEntropyLoss()
+
+    x = Variable(torch.from_numpy(trainData), requires_grad=False).type(dtype_float)
+    y_classes = Variable(torch.from_numpy(np.argmax(trainLabels, 1)), requires_grad=False).type(dtype_long)
+
+    learning_rate = 1e-3
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    for t in range(10000):
+        y_pred = model(x)
+        loss = loss_func(y_pred, y_classes)
+        model.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+    x = Variable(torch.from_numpy(validData), requires_grad=False).type(dtype_float)
+    y_pred = model(x).data.numpy()
+    print(np.mean(np.argmax(y_pred, 1)==np.argmax(validLabels, 1)))
 
     # filename = os.path.join(os.getcwd(), "cropped/")
     # filename = filename + str("baldwin0.jpg")
