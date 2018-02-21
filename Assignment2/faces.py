@@ -246,6 +246,7 @@ def main():
     train_idx = np.random.permutation(range(trainData.shape[0]))[:200]
     x = Variable(torch.from_numpy(trainData[train_idx]), requires_grad=False).type(dtype_float)
     y_classes = Variable(torch.from_numpy(np.argmax(trainLabels[train_idx], 1)), requires_grad=False).type(dtype_long)
+    ################################################################################
 
     learning_rate = 1e-3
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
@@ -266,12 +267,6 @@ def main():
     y_pred = model(x).data.numpy()
     print("Test Accuracy: " + str(np.mean(np.argmax(y_pred, 1) == np.argmax(testLabels, 1))))
 
-    # filename = os.path.join(os.getcwd(), "cropped/")
-    # filename = filename + str("baldwin0.jpg")
-    # test = imread(filename)
-    # test = imresize(test, [32,32], 'nearest')
-    # plt.imshow(test)
-    # plt.show()
 
 if __name__ == "__main__":
     main()
