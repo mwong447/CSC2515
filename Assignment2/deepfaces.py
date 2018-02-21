@@ -4,20 +4,21 @@ from scipy.misc import imread
 from scipy.misc import imshow
 from scipy.misc import imresize
 from scipy.misc import imsave
+from torch.autograd import Variable
 import urllib.error
 import urllib.request
 import urllib.parse
 import urllib.response
 import urllib.robotparser
-from torch.autograd import Variable
 import torch
+import torch.nn as nn
+import torchvision
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import loadmat
+import torchvision.models as models
 
-
-# Imported code from Assignment 1 to handle FaceScrub data set
-
+# Functions from faces.py for this section
 def getActors(X,Y=None):
     current_directory = os.getcwd()
     filename = str(X)
@@ -31,7 +32,7 @@ def getActors(X,Y=None):
 
 def getPictures():
 
-    location = str("cropped/")
+    location = str("cropped227/")
     if not os.path.exists(os.path.join(os.getcwd(), location)):
         males = ['Alec Baldwin', 'Bill Hader', 'Steve Carell']
         getCroppedData(males, "facescrub_actors.txt")
@@ -39,7 +40,7 @@ def getPictures():
         getCroppedData(females, "facescrub_actresses.txt")
 
 def getCroppedData(list, file):
-    location = str("cropped/")
+    location = str("cropped227/")
     if not os.path.exists(os.path.join(os.getcwd(), location)):
         os.makedirs(os.path.join(os.getcwd(), location))
     for a in list:
@@ -74,7 +75,7 @@ def getCroppedData(list, file):
                                     print("Hash matched, colour image, saving to disk...")
                                     img = img[y1:y2, x1:x2]
                                     img = img/255.0
-                                    img = imresize(img, [32, 32], 'nearest')
+                                    img = imresize(img, [227, 227], 'nearest')
                                     print("Attempting to save file to disk")
                                     imsave(os.path.join(os.path.join(os.getcwd(), location), filename), img)
                                     i += 1
@@ -94,8 +95,8 @@ def getCroppedData(list, file):
                         print("Other exception")
 
 def getDataMatrix(actors):
-    directory = os.path.join(os.getcwd(), "cropped/")
-    x = np.zeros((32 * 32 * 3, 0))
+    directory = os.path.join(os.getcwd(), "cropped227/")
+    x = np.zeros((227 * 227 * 3, 0))
     for a in actors:
         name = a.split()[1].lower()
         for file in os.listdir(directory):
@@ -111,7 +112,7 @@ def getDataMatrix(actors):
 
 
 def getDataLabels(actors):
-    directory = os.path.join(os.getcwd(), "cropped/")
+    directory = os.path.join(os.getcwd(), "cropped227/")
     batch_y_s = np.zeros((0, 6))
     current_index = 0
     for a in actors:
@@ -132,12 +133,12 @@ def shuffle(data, labels, percentage):
 
     # Getting the test data
     complete = np.vstack((data, labels))
-    bracco = int(np.sum(complete[3072, :], axis=0))
-    gilpin = int(np.sum(complete[3073, :], axis=0))
-    harmon = int(np.sum(complete[3074, :], axis=0))
-    baldwin = int(np.sum(complete[3075, :], axis=0))
-    hader = int(np.sum(complete[3076, :], axis=0))
-    carell = int(np.sum(complete[3077, :], axis=0))
+    bracco = int(np.sum(complete[154587, :], axis=0))
+    gilpin = int(np.sum(complete[154588, :], axis=0))
+    harmon = int(np.sum(complete[154589, :], axis=0))
+    baldwin = int(np.sum(complete[154590, :], axis=0))
+    hader = int(np.sum(complete[154591, :], axis=0))
+    carell = int(np.sum(complete[154592, :], axis=0))
 
     # creating actor-specific subarrays and extracting the first twenty examples
     bracco_matrix = complete[:, :bracco]
@@ -157,7 +158,7 @@ def shuffle(data, labels, percentage):
     testData = np.hstack((testData, test_baldwin))
     testData = np.hstack((testData, test_hader))
     testData = np.hstack((testData, test_carell))
-    testLabels = testData[3072:, :]
+    testLabels = testData[154587:, :]
     testData = testData[:-6, :]
 
 
@@ -178,93 +179,90 @@ def shuffle(data, labels, percentage):
     np.random.shuffle(complete)
     complete = np.transpose(complete)
     trainData, validData = complete[:-6, :int(percentage*complete.shape[1])], complete[:-6, int(percentage*complete.shape[1]):int(complete.shape[1])]
-    trainLabels, validLabels = complete[3072:, :int(percentage*complete.shape[1])], complete[3072:, int(percentage*complete.shape[1]):int(complete.shape[1])]
+    trainLabels, validLabels = complete[154587:, :int(percentage*complete.shape[1])], complete[154587:, int(percentage*complete.shape[1]):int(complete.shape[1])]
 
     return trainData, validData, testData, trainLabels, validLabels, testLabels
 
 
-# Second main function
+class anotherAlexNet(nn.Module):
+    def load_weights(self):
+        an_builtin = torchvision.models.alexnet(pretrained=True)
 
+        features_weight_i = [0, 3, 6, 8, 10]
+        for i in features_weight_i:
+            self.features[i].weight = an_builtin.features[i].weight
+            self.features[i].bias = an_builtin.features[i].bias
+
+        classifier_weight_i = [1, 4, 6]
+        for i in classifier_weight_i:
+            self.classifier[i].weight = an_builtin.classifier[i].weight
+            self.classifier[i].bias = an_builtin.classifier[i].bias
+
+    def __init__(self, num_classes=1000):
+        super(anotherAlexNet, self).__init__()
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 64, kernel_size=11, stride=4, padding=2),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+            nn.Conv2d(64, 192, kernel_size=5, padding=2),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+            nn.Conv2d(192, 384, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(384, 256, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(256, 256, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+        )
+        self.classifier = nn.Sequential(
+            nn.Dropout(),
+            nn.Linear(256 * 6 * 6, 4096),
+            nn.ReLU(inplace=True),
+            nn.Dropout(),
+            nn.Linear(4096, 4096),
+            nn.ReLU(inplace=True),
+        )
+
+        self.load_weights()
+
+    def forward(self, x):
+        x = self.features(x)
+        return x
 
 def main():
 
-    # Declaring list of actors
-    act = ['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
-    # Getting the data from the URLs
-    getPictures()
-    X = getDataMatrix(act)
-    Y = getDataLabels(act)
-    trainData, validData, testData, trainLabels, validLabels, testLabels = shuffle(X, Y, 0.8)
-    trainData = np.transpose(trainData)
-    trainLabels = np.transpose(trainLabels)
-    validData = np.transpose(validData)
-    validLabels = np.transpose(validLabels)
-    testData = np.transpose(testData)
-    testLabels = np.transpose(testLabels)
+    model = anotherAlexNet()
+    print(model.features)
 
-    print(trainData.shape)
-    print(validData.shape)
-    print(trainLabels.shape)
-    print(validLabels.shape)
-    print(testData.shape)
-    print(testLabels.shape)
+    # Getting the data
+    # act = ['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
+    # # Getting the data from the URLs
+    # getPictures()
+    # X = getDataMatrix(act)
+    # Y = getDataLabels(act)
+    # trainData, validData, testData, trainLabels, validLabels, testLabels = shuffle(X, Y, 0.8)
+    # trainData = np.transpose(trainData)
+    # trainLabels = np.transpose(trainLabels)
+    # validData = np.transpose(validData)
+    # validLabels = np.transpose(validLabels)
+    # testData = np.transpose(testData)
+    # testLabels = np.transpose(testLabels)
+    #
+    # print(trainData.shape)
+    # print(validData.shape)
+    # print(trainLabels.shape)
+    # print(validLabels.shape)
+    # print(testData.shape)
+    # print(testLabels.shape)
+    #
+    #
 
-    print("Number of Bracco in training set: " + str(int(np.sum(trainLabels[:, 0], axis=0))))
-    print("Number of Gilpin in training set: " + str(int(np.sum(trainLabels[:, 1], axis=0))))
-    print("Number of Harmon in training set: " + str(int(np.sum(trainLabels[:, 2], axis=0))))
-    print("Number of Baldwin in training set: " + str(int(np.sum(trainLabels[:, 3], axis=0))))
-    print("Number of Hader in training set: " + str(int(np.sum(trainLabels[:, 4], axis=0))))
-    print("Number of Carell in training set: " + str(int(np.sum(trainLabels[:, 5], axis=0))))
 
-    print("Number of Bracco in validation set: " + str(int(np.sum(validLabels[:, 0], axis=0))))
-    print("Number of Gilpin in validation set: " + str(int(np.sum(validLabels[:, 1], axis=0))))
-    print("Number of Harmon in validation set: " + str(int(np.sum(validLabels[:, 2], axis=0))))
-    print("Number of Baldwin in validation set: " + str(int(np.sum(validLabels[:, 3], axis=0))))
-    print("Number of Hader in validation set: " + str(int(np.sum(validLabels[:, 4], axis=0))))
-    print("Number of Carell in validation set: " + str(int(np.sum(validLabels[:, 5], axis=0))))
 
-    print("Number of Bracco in test set: " + str(int(np.sum(testLabels[:, 0], axis=0))))
-    print("Number of Gilpin in test set: " + str(int(np.sum(testLabels[:, 1], axis=0))))
-    print("Number of Harmon in test set: " + str(int(np.sum(testLabels[:, 2], axis=0))))
-    print("Number of Baldwin in test set: " + str(int(np.sum(testLabels[:, 3], axis=0))))
-    print("Number of Hader in test set: " + str(int(np.sum(testLabels[:, 4], axis=0))))
-    print("Number of Carell in test set: " + str(int(np.sum(testLabels[:, 5], axis=0))))
 
-    # Setting up the pytorch model
-    dim_x = 32*32*3
-    dim_h = 50
-    dim_out = 6
-    dtype_float = torch.FloatTensor
-    dtype_long = torch.LongTensor
-    model = torch.nn.Sequential(torch.nn.Linear(dim_x, dim_h), torch.nn.ReLU(), torch.nn.Linear(dim_h, dim_out),)
-    loss_func = torch.nn.CrossEntropyLoss()
-
-    ################################################################################
-    # Subsample the training set for faster training
-    train_idx = np.random.permutation(range(trainData.shape[0]))[:200]
-    x = Variable(torch.from_numpy(trainData[train_idx]), requires_grad=False).type(dtype_float)
-    y_classes = Variable(torch.from_numpy(np.argmax(trainLabels[train_idx], 1)), requires_grad=False).type(dtype_long)
-    ################################################################################
-
-    learning_rate = 1e-3
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    for t in range(10000):
-        y_pred = model(x)
-        loss = loss_func(y_pred, y_classes)
-        model.zero_grad()
-        loss.backward()
-        optimizer.step()
-
-    x = Variable(torch.from_numpy(trainData), requires_grad=False).type(dtype_float)
-    y_pred = model(x).data.numpy()
-    print("Training Accuracy: " + str(np.mean(np.argmax(y_pred, 1) == np.argmax(trainLabels, 1))))
-    x = Variable(torch.from_numpy(validData), requires_grad=False).type(dtype_float)
-    y_pred = model(x).data.numpy()
-    print("Validation Accuracy: " + str(np.mean(np.argmax(y_pred, 1) == np.argmax(validLabels, 1))))
-    x = Variable(torch.from_numpy(testData), requires_grad=False).type(dtype_float)
-    y_pred = model(x).data.numpy()
-    print("Test Accuracy: " + str(np.mean(np.argmax(y_pred, 1) == np.argmax(testLabels, 1))))
 
 
 if __name__ == "__main__":
-    main()
+        main()
+
+
