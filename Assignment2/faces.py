@@ -196,7 +196,7 @@ def main():
     getPictures()
     X = getDataMatrix(act)
     Y = getDataLabels(act)
-    trainData, validData, testData, trainLabels, validLabels, testLabels = shuffle(X, Y, 0.7)
+    trainData, validData, testData, trainLabels, validLabels, testLabels = shuffle(X, Y, 0.8)
     trainData = np.transpose(trainData)
     trainLabels = np.transpose(trainLabels)
     validData = np.transpose(validData)
@@ -233,29 +233,38 @@ def main():
     print("Number of Carell in test set: " + str(int(np.sum(testLabels[:, 5], axis=0))))
 
     # Setting up the pytorch model
-    # dim_x = 32*32*3
-    # dim_h = 20
-    # dim_out = 6
-    # dtype_float = torch.FloatTensor
-    # dtype_long = torch.LongTensor
-    # model = torch.nn.Sequential(torch.nn.Linear(dim_x, dim_h), torch.nn.ReLU(), torch.nn.Linear(dim_h, dim_out),)
-    # loss_func = torch.nn.CrossEntropyLoss()
-    #
-    # x = Variable(torch.from_numpy(trainData), requires_grad=False).type(dtype_float)
-    # y_classes = Variable(torch.from_numpy(np.argmax(trainLabels, 1)), requires_grad=False).type(dtype_long)
-    #
-    # learning_rate = 1e-3
-    # optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    # for t in range(10000):
-    #     y_pred = model(x)
-    #     loss = loss_func(y_pred, y_classes)
-    #     model.zero_grad()
-    #     loss.backward()
-    #     optimizer.step()
-    #
-    # x = Variable(torch.from_numpy(validData), requires_grad=False).type(dtype_float)
-    # y_pred = model(x).data.numpy()
-    # print(np.mean(np.argmax(y_pred, 1)==np.argmax(validLabels, 1)))
+    dim_x = 32*32*3
+    dim_h = 50
+    dim_out = 6
+    dtype_float = torch.FloatTensor
+    dtype_long = torch.LongTensor
+    model = torch.nn.Sequential(torch.nn.Linear(dim_x, dim_h), torch.nn.ReLU(), torch.nn.Linear(dim_h, dim_out),)
+    loss_func = torch.nn.CrossEntropyLoss()
+
+    ################################################################################
+    # Subsample the training set for faster training
+    train_idx = np.random.permutation(range(trainData.shape[0]))[:200]
+    x = Variable(torch.from_numpy(trainData[train_idx]), requires_grad=False).type(dtype_float)
+    y_classes = Variable(torch.from_numpy(np.argmax(trainLabels[train_idx], 1)), requires_grad=False).type(dtype_long)
+
+    learning_rate = 1e-3
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    for t in range(10000):
+        y_pred = model(x)
+        loss = loss_func(y_pred, y_classes)
+        model.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+    x = Variable(torch.from_numpy(trainData), requires_grad=False).type(dtype_float)
+    y_pred = model(x).data.numpy()
+    print("Training Accuracy: " + str(np.mean(np.argmax(y_pred, 1) == np.argmax(trainLabels, 1))))
+    x = Variable(torch.from_numpy(validData), requires_grad=False).type(dtype_float)
+    y_pred = model(x).data.numpy()
+    print("Validation Accuracy: " + str(np.mean(np.argmax(y_pred, 1) == np.argmax(validLabels, 1))))
+    x = Variable(torch.from_numpy(testData), requires_grad=False).type(dtype_float)
+    y_pred = model(x).data.numpy()
+    print("Test Accuracy: " + str(np.mean(np.argmax(y_pred, 1) == np.argmax(testLabels, 1))))
 
     # filename = os.path.join(os.getcwd(), "cropped/")
     # filename = filename + str("baldwin0.jpg")
