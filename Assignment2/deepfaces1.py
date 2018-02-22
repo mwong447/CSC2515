@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Feb 22 14:43:11 2018
+
+@author: openaccount
+"""
+
 import os
 import hashlib
 from scipy.misc import imread
@@ -18,6 +26,17 @@ import matplotlib.pyplot as plt
 from scipy.io import loadmat
 import torchvision.models as models
 
+
+
+def shuffle_1(data, labels, percentage):
+    np.random.seed(1)
+    complete = np.vstack((data, labels))
+    complete = np.transpose(complete)
+    np.random.shuffle(complete)
+    complete = np.transpose(complete)
+    trainData, validData = complete[:-6, :int(percentage*complete.shape[1])], complete[:-6, int(percentage*complete.shape[1]):int(complete.shape[1])]
+    trainLabels, validLabels = complete[43264:, :int(percentage*complete.shape[1])], complete[43264:, int(percentage*complete.shape[1]):int(complete.shape[1])]
+    return trainData, validData, trainLabels, validLabels
 
 # Functions from faces.py for this section
 def getActors(X,Y=None):
@@ -252,7 +271,27 @@ def main():
     Y = getDataLabels(act)
     X=all_probs.copy()
     X=X.reshape(-1,X.shape[0])
-    X=X.T
+    
+    print (X.shape)
+    print (Y.shape)
+    
+    trainData, validData, trainLabels, validLabels=shuffle_1(X,Y,0.75)
+    
+    print (trainData.shape)
+    print (validData.shape)
+    print (trainLabels.shape)
+    print (validLabels.shape)
+    
+    trainData=trainData.T
+    validData=validData.T
+    trainLabels=trainLabels.T
+    validLabels=validLabels.T
+    
+    #X=X.T
+    #Y=Y.T
+    
+    iters=list() #PLOTTING
+    train_accuracy=list() #PLOTTING
     
     dim_x = 43264
     dim_h = 20
@@ -262,21 +301,44 @@ def main():
     model = torch.nn.Sequential(torch.nn.Linear(dim_x, dim_h), torch.nn.ReLU(), torch.nn.Linear(dim_h, dim_out),)
     loss_func = torch.nn.CrossEntropyLoss()
 
-    x = Variable(torch.from_numpy(X), requires_grad=False).type(dtype_float)
-    y_classes = Variable(torch.from_numpy(np.argmax(Y, 1)), requires_grad=False).type(dtype_long)
+    x = Variable(torch.from_numpy(trainData), requires_grad=False).type(dtype_float)
+    y_classes = Variable(torch.from_numpy(np.argmax(trainLabels, 1)), requires_grad=False).type(dtype_long)
 
     learning_rate = 1e-3
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    for t in range(10000):
+    for t in range(200):
         y_pred = model(x)
         loss = loss_func(y_pred, y_classes)
         model.zero_grad()
         loss.backward()
         optimizer.step()
+        
+        iters.append(t) ##PLOT
+        
+        x_ = Variable(torch.from_numpy(trainData), requires_grad=False).type(dtype_float)
+        y_pred_ = model(x_).data.numpy()
+        
+        train_acc=(np.mean(np.argmax(y_pred_, 1) == np.argmax(trainLabels, 1)))
+        train_accuracy.append(train_acc)
 
-    x = Variable(torch.from_numpy(X), requires_grad=False).type(dtype_float)
+    print ("train")
+    x = Variable(torch.from_numpy(trainData), requires_grad=False).type(dtype_float)
     y_pred = model(x).data.numpy()
-    print(np.mean(np.argmax(y_pred, 1)==np.argmax(Y, 1)))
+    print(np.mean(np.argmax(y_pred, 1)==np.argmax(trainLabels, 1)))
+    print(np.sum(np.argmax(y_pred, 1)==np.argmax(trainLabels, 1)))
+    
+    print ("test")
+    x = Variable(torch.from_numpy(validData), requires_grad=False).type(dtype_float)
+    y_pred = model(x).data.numpy()
+    print(np.mean(np.argmax(y_pred, 1)==np.argmax(validLabels, 1)))
+    
+    x_plot=iters
+    y1_plot=train_accuracy
+    plt.xlabel("Iterations")
+    plt.ylabel("Accuracy")
+    plt.plot(x_plot,y1_plot,'r--',label="Training Performance")
+    plt.legend()
+    plt.show()
     
 
     # directory = os.path.join(os.getcwd(),"cropped227/")
@@ -295,6 +357,9 @@ def main():
     # print(soosh.shape)
     # testoutput = softmax(model1.forward(soosh)).data.numpy()
     # print(testoutput.shape)
+
+
+
 
 
 
