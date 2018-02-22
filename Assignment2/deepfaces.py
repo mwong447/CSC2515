@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 from scipy.io import loadmat
 import torchvision.models as models
 
+
 # Functions from faces.py for this section
 def getActors(X,Y=None):
     current_directory = os.getcwd()
@@ -96,18 +97,17 @@ def getCroppedData(list, file):
 
 def getDataMatrix(actors):
     directory = os.path.join(os.getcwd(), "cropped227/")
-    x = np.zeros((227 * 227 * 3, 0))
+    x = np.zeros((0, 3, 227, 227))
     for a in actors:
         name = a.split()[1].lower()
         for file in os.listdir(directory):
             filename = str(file)
             if name in filename:
-                img = imread(os.path.join(directory, str(file)))
-                img = np.array(img)/255.0
-                img = img.flatten()
-                img = np.expand_dims(img, axis=1)
-                x = np.hstack((x, img))
-    x = np.array(x)
+                img = imread(os.path.join(directory, str(file)))[:, :, :3]
+                img = img - np.mean(img.flatten())
+                img = np.rollaxis(img, -1).astype("float32")
+                img = img[np.newaxis, :]
+                x = np.concatenate((x, img))
     return x
 
 
@@ -185,6 +185,7 @@ def shuffle(data, labels, percentage):
 
 
 class anotherAlexNet(nn.Module):
+
     def load_weights(self):
         an_builtin = torchvision.models.alexnet(pretrained=True)
 
@@ -193,7 +194,7 @@ class anotherAlexNet(nn.Module):
             self.features[i].weight = an_builtin.features[i].weight
             self.features[i].bias = an_builtin.features[i].bias
 
-        classifier_weight_i = [1, 4, 6]
+        classifier_weight_i = [1, 4]
         for i in classifier_weight_i:
             self.classifier[i].weight = an_builtin.classifier[i].weight
             self.classifier[i].bias = an_builtin.classifier[i].bias
@@ -213,6 +214,7 @@ class anotherAlexNet(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(256, 256, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
+            nn.Linear(154587, 6)
         )
         self.classifier = nn.Sequential(
             nn.Dropout(),
@@ -231,31 +233,67 @@ class anotherAlexNet(nn.Module):
 
 def main():
 
-    model = anotherAlexNet()
-    print(model.features)
 
-    # Getting the data
-    # act = ['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
-    # # Getting the data from the URLs
-    # getPictures()
-    # X = getDataMatrix(act)
-    # Y = getDataLabels(act)
-    # trainData, validData, testData, trainLabels, validLabels, testLabels = shuffle(X, Y, 0.8)
-    # trainData = np.transpose(trainData)
-    # trainLabels = np.transpose(trainLabels)
-    # validData = np.transpose(validData)
-    # validLabels = np.transpose(validLabels)
-    # testData = np.transpose(testData)
-    # testLabels = np.transpose(testLabels)
+    # Declaring list of actors
+    act = ['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
+    # Getting the data from the URLs
+    getPictures()
+    X = getDataMatrix(act)
+    Y = getDataLabels(act)
+    print(X.shape)
+
+    model = anotherAlexNet()
+    model.eval()
+
+    dtype_float = torch.FloatTensor
+    dtype_long = torch.LongTensor
+    loss_func = torch.nn.CrossEntropyLoss()
+
+    x = Variable(torch.from_numpy(X), requires_grad=False).type(dtype_float)
+    y_classes = Variable(torch.from_numpy(np.argmax(Y, 1)), requires_grad=False).type(dtype_long)
+
+    learning_rate = 1e-3
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    for t in range(10000):
+        y_pred = model(x)
+        loss = loss_func(y_pred, y_classes)
+        model.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+    x = Variable(torch.from_numpy(X), requires_grad=False).type(dtype_float)
+    y_pred = model(x).data.numpy()
+    print("Training Accuracy: " + str(np.mean(np.argmax(y_pred, 1) == np.argmax(Y, 1))))
+
+
+    # directory = os.path.join(os.getcwd(),"cropped227/")
+    # im = imread(os.path.join(directory,"baldwin0.jpg"))[:,:,:3]
+    # im = im - np.mean(im.flatten())
+    # im = im / np.max(np.abs(im.flatten()))
+    # im = np.rollaxis(im, -1).astype("float32")
     #
-    # print(trainData.shape)
-    # print(validData.shape)
-    # print(trainLabels.shape)
-    # print(validLabels.shape)
-    # print(testData.shape)
-    # print(testLabels.shape)
-    #
-    #
+    # im2 = imread(os.path.join(directory, "baldwin1.jpg"))
+    # im2 = im2 - np.mean(im2.flatten())
+    # im2 = im2 / np.max(np.abs(im2.flatten()))
+    # im2 = np.rollaxis(im2, -1).astype("float32")
+    # imshow(im2)
+    # plt.show()
+    # sos1 = im2.flatten()
+    # sos1 = sos1.reshape((3, 227, 227))
+    # imshow(sos1)
+    # plt.show()
+    # soosh = Variable(torch.from_numpy(im2).unsqueeze_(0), requires_grad=False)
+    # print(soosh.shape)
+    # test = np.zeros((3, 227, 227))
+    # test = np.stack((test, im))
+    # im2 = im2[np.newaxis]
+    # print(im2.shape)
+    # print(test.shape)
+    # test2 = np.concatenate((test,im2))
+    # print(test2.shape)
+    # sos = test2[:,:,:,:]
+    # print(sos.shape)
+
 
 
 
