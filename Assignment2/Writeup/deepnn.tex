@@ -263,19 +263,21 @@ def testPart2():
 \end{lstlisting}
 
 Output from the test case:
-def testPart2():
-    # Load Data
-    M = loadData()
-    train = loadTrain(M)
-    # Testing computation function
-    # Initialize weights and bias to random normal variables
-    W = np.random.normal(0.0, 0.1, (784, 10))
-    b = np.random.normal(0, 0.1, (10, 1))
-    hypothesis = compute(train, W, b)
-    print(softmax(hypothesis))
+\begin{lstlisting}
+[[ 0.02681158  0.0532326   0.04155301 ...,  0.02401518  0.05461363
+   0.09298066]
+ [ 0.02934882  0.02945978  0.00866719 ...,  0.02812303  0.05160524
+   0.06640991]
+ [ 0.07800929  0.14095711  0.05324094 ...,  0.08344358  0.071218
+   0.03403779]
+ ..., 
+ [ 0.06811845  0.09068319  0.11408343 ...,  0.09293973  0.23242635
+   0.24750088]
+ [ 0.42558937  0.28527524  0.36294473 ...,  0.32821263  0.12923604
+   0.11150445]
+ [ 0.04023265  0.03443131  0.05201543 ...,  0.0454216   0.06806685
+   0.08509415]]
 \end{lstlisting}
-
-
 \end{homeworkProblem}
 \clearpage
 %----------------------------------------------------------------------------------------
@@ -285,26 +287,110 @@ def testPart2():
 %----------------------------------------------------------------------------------------
 
 \begin{homeworkProblem}
-\noindent \textit{Binary Classification between Steve Carrel and Alec Baldwin}
+\noindent \textit{Gradient derivation and vectorized format}
 
-As outlined in the assignment documentation, linear regression was used to create a binary classifier.  The cost function that was minimized was the quadratic cost function, also known as the least-squares cost function as outlined below.
-\begin{center}
-$J(\theta)=\sum_{i=1}^{n}(h_{\theta}(x^{(i)}-y^{(i)})^2$
-\end{center}
-
-Using the Gradient-Descent algorithm, a training accuracy of 100\% was obtained on the training data compared to a validation accuracy of 83\%.  The following code was used to output the results of the hypothesis from the binary classifier.
+\begin{enumerate}[label=(\Alph*)]
+\item NEED TO WRITE THE PROOF HERE
+\item The source code for computing the gradient is shown below.
 \begin{lstlisting}
-#Input - the training_hypothesis matrix, of shape m x 1, where m is the number of examples
-    i = 0
-    while i < training_hypothesis.shape[0]:
-        if training_hypothesis[i] > 0.5:
-            training_hypothesis[i] = 1
-        else:
-            training_hypothesis[i] = 0
-        i+=1
-\end{lstlisting}
+def grad_NLL_W(y, o, layer):
+    p = softmax(o)
+    grad = p - y
+    grad = np.matmul(grad, np.transpose(layer))
+    return np.transpose(grad)
 
-The Gradident Descent algorithm was modified for the purposes for this assignment was taken from the Galaxy code posted on the CSC2515 website.  In order to get the system to work, a suitable number of maximum iterations was performed, in addition to modifying the learning rate, $\alpha$.  I did not formalize my selection of the two parameters, but tried experimenting with different values.  I noticed that as $\alpha$ was increased by a factor of 10 (e.g. $10^{-4}$), there were errors in the matrix operations being performed, resulting in numerical overflow issues.  As $\alpha$ decreased, (e.g. $10^{-6}$) it was observed that both the training and validation sets exhibited lower accuracy in correctly identifying the individuals - perhaps indicating a local minimum.  However, this could certainly be investigated by modifying the number of maximum iterations (but in the cases mentioned, testing was completed on 10000 iterations).  Furthermore, the above loop could further be optimized using a vectorization technique or by implementing one-hot initialization (e.g. as in the Tensorflow package).
+
+# Computes the gradient of negative log-loss function for biases only
+def grad_NLL_b(y, o):
+    p = softmax(o)
+    grad = p - y
+    grad = np.sum(grad, axis=1, keepdims=True)
+    return grad
+\end{lstlisting}
+The source for our test cases, along with the outputs, are also shown below.
+\begin{lstlisting}
+def testPart3():
+    # Test gradient functionality
+    y = np.zeros((10, 1))
+    y[1, :] = 1
+
+    # Create a test matrix
+    M = loadData()
+    test0 = ((M["train1"][130].T) / 255.0).reshape((784, 1))
+    W = np.random.normal(0, 0.2, (784, 10))
+    b = np.random.normal(0, 0.2, (10, 1))
+    # print(np.where(test0 != 0))
+
+    # Create a finite difference
+    h = 0.00001
+
+    # Weight testing
+    finite_W = np.zeros((784, 10))
+    finite_W[542, 0] = h
+    finite_d = (NLL(y, compute(test0, W + finite_W, b)) - NLL(y, compute(test0, W, b))) / (h)
+    print("Cost for row 542, column 0: " + str(finite_d))
+    gradient = grad_NLL_W(y, compute(test0, W, b), test0)
+    print("Gradient for row 542, column 0: " + str(gradient[542, 0]))
+
+    # Bias testing
+    finite_b = np.zeros((10, 1))
+    finite_b[1, :] = h
+    finite_d = (NLL(y, compute(test0, W, b + finite_b)) - NLL(y, compute(test0, W, b))) / (h)
+    print("Cost for second element in bias: " + str(finite_d))
+    gradient = grad_NLL_b(y, compute(test0, W, b))
+    print("Gradient matrix: " + str(gradient))
+
+    # Reinitialize test variables for another test
+    finite_W = np.zeros((784, 10))
+    finite_b = np.zeros((10, 1))
+    y = np.zeros((10, 1))
+    test1 = ((M["train9"][130].T) / 255.0).reshape((784, 1))
+    y[9, :] = 1
+
+    # Weight testing
+    finite_W[300, 4] = h
+    finite_d = (NLL(y, compute(test1, W + finite_W, b)) - NLL(y, compute(test1, W, b))) / (h)
+    print("Cost for row 300, column 4: " + str(finite_d))
+    gradient = grad_NLL_W(y, compute(test1, W, b), test1)
+    print("Gradient for row 300, column 4: " + str(gradient[300, 4]))
+
+    # Bias testing
+    finite_b[4, :] = h
+    finite_d = (NLL(y, compute(test1, W, b + finite_b)) - NLL(y, compute(test1, W, b))) / (h)
+    print("Cost for fifth element in bias: " + str(finite_d))
+    gradient = grad_NLL_b(y, compute(test1, W, b))
+    print("Gradient matrix: " + str(gradient))
+
+\end{lstlisting}
+\begin{lstlisting}
+Cost for row 542, column 0: 0.0424078520744
+Gradient for row 542, column 0: 0.0424076964593
+Cost for second element in bias: -0.996437311773
+Gradient matrix: [[ 0.05461597]
+ [-0.99643733]
+ [ 0.03592502]
+ [ 0.32774037]
+ [ 0.04444944]
+ [ 0.05179153]
+ [ 0.08930539]
+ [ 0.14572631]
+ [ 0.19441422]
+ [ 0.05246907]]
+Cost for row 300, column 4: 0.000106382902487
+Gradient for row 300, column 4: 0.000106382357955
+Cost for fifth element in bias: 0.00010680176743
+Gradient matrix: [[  3.36017608e-03]
+ [  1.57850465e-02]
+ [  1.07051677e-02]
+ [  1.06504072e-01]
+ [  1.06801186e-04]
+ [  6.75277789e-02]
+ [  9.15366897e-02]
+ [  8.16717644e-02]
+ [  6.16811862e-01]
+ [ -9.94009358e-01]]
+\end{lstlisting}
+\end{enumerate}
 
 
 \end{homeworkProblem}
@@ -314,93 +400,9 @@ The Gradident Descent algorithm was modified for the purposes for this assignmen
 %----------------------------------------------------------------------------------------
 
 \begin{homeworkProblem}
-\noindent \textit{Visualizing Binary $\theta 's $}
-\begin{enumerate}[label=(\Alph*)]
-\item The two figures below show the visualized $\theta 's$ for training on the complete set of Baldwin and Carell and of two images respectively.
-\begin{center}
-\begin{figure}[!ht]\centering
-\begin{subfigure}[t]{.3\textwidth}\centering
-  \includegraphics[width=.3\linewidth]{complete_thetas.jpg}
-  \caption{$\theta 's$ with full training set.}
-\end{subfigure}%
-\begin{subfigure}[t]{.3\textwidth}\centering
-  \includegraphics[width=.3\linewidth]{two_actor_thetas.jpg}
-  \caption{$\theta 's$ with training size 2.}
-  \end{subfigure}%
-  \caption{Visualized $\theta 's$}
-\end{figure}
-\end{center}
+\noindent \textit{Gradient Descent Training}
 
-\item Experiments were run by modifying both the initializations of $\theta$ and the number of iterations - however, it was noted that the experiments with an initialized $\theta$ matrix of 1's most closely resembled a face, indicating the the initialization of $\theta$ may be hindering the appearance of "face-like" $\theta$ values.
-
-\begin{center}
-\begin{figure}[!ht]
-\begin{subfigure}[t]{.25\textwidth}\centering
-  \includegraphics[width=0.35\linewidth]{two_actor_thetas__lognorm_2500_iterations.jpg}
-  \caption{2500 iterations}
-\end{subfigure}%
-\begin{subfigure}[t]{.25\textwidth}\centering
-  \includegraphics[width=.35\linewidth
-  ]{two_actor_thetas__lognorm_5000_iterations.jpg}
-    \caption{5000 iterations}
-  \end{subfigure}%
-  \begin{subfigure}[t]{.25\textwidth}\centering
-  \includegraphics[width=.35\linewidth]{two_actor_thetas__lognorm_7500_iterations.jpg}
-      \caption{7500 iterations}
-\end{subfigure}%
-\begin{subfigure}[t]{.25\textwidth}\centering
-  \includegraphics[width=.35\linewidth]{two_actor_thetas__lognorm_10000_iterations.jpg}
-      \caption{10000 iterations}
-  \end{subfigure}%
-  \caption{$\theta$'s after log-normal initialization of $\theta$ with $\mu$ = 0 and $\sigma$ = 0.2}
-\end{figure}
-\end{center}
-
-\begin{center}
-\begin{figure}[!ht]
-\begin{subfigure}[t]{.25\textwidth}\centering
-  \includegraphics[width=0.35\linewidth]{two_actor_thetas__norm_2500_iterations.jpg}
-  \caption{2500 iterations}
-\end{subfigure}%
-\begin{subfigure}[t]{.25\textwidth}\centering
-  \includegraphics[width=.35\linewidth
-  ]{two_actor_thetas__norm_5000_iterations.jpg}
-    \caption{5000 iterations}
-  \end{subfigure}%
-  \begin{subfigure}[t]{.25\textwidth}\centering
-  \includegraphics[width=.35\linewidth]{two_actor_thetas__norm_7500_iterations.jpg}
-      \caption{7500 iterations}
-\end{subfigure}%
-\begin{subfigure}[t]{.25\textwidth}\centering
-  \includegraphics[width=.35\linewidth]{two_actor_thetas__norm_10000_iterations.jpg}
-      \caption{10000 iterations}
-  \end{subfigure}%
-  \caption{$\theta$'s after Normal initialization of $\theta$ with $\mu$ = 0 and $\sigma$ = 0.2}
-\end{figure}
-\end{center}
-\begin{center}
-\begin{figure}[!ht]
-\begin{subfigure}[t]{.25\textwidth}\centering
-  \includegraphics[width=0.35\linewidth]{two_actor_thetas_ones_2500_iterations.jpg}
-  \caption{2500 iterations}
-\end{subfigure}%
-\begin{subfigure}[t]{.25\textwidth}\centering
-  \includegraphics[width=.35\linewidth
-  ]{two_actor_thetas_ones_5000_iterations.jpg}
-    \caption{5000 iterations}
-  \end{subfigure}%
-  \begin{subfigure}[t]{.25\textwidth}\centering
-  \includegraphics[width=.35\linewidth]{two_actor_thetas_ones_7500_iterations.jpg}
-      \caption{7500 iterations}
-\end{subfigure}%
-\begin{subfigure}[t]{.25\textwidth}\centering
-  \includegraphics[width=.35\linewidth]{two_actor_thetas_ones_10000_iterations.jpg}
-      \caption{10000 iterations}
-  \end{subfigure}%
-  \caption{$\theta$'s 1 initialization}
-\end{figure}
-\end{center}
-\end{enumerate}
+For the Vanilla Gradient Descent algorithm, we decided to initialize both the weights and biases from a normal distribution, centered at 0, with mean 0.2, of shape (784, 10) and (10, 1) respectively.  Furthermore, we selected the learning rate to be 0.00001.  We opted not to scale the loss function by the number of training examples - hence explaining the relatively low learning that other teams may have used in their experiments.  We attempted to modify the type of distribution, the learning rate and the number of iterations and determined that the reported results were the best (e.g. the network converges relatively quickly at 500 iterations - we tested it to approximately 5000 iterations, but we found that the cost would increase after 2500, with very little impact on performance.
 
 
 
