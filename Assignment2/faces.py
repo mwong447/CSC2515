@@ -338,6 +338,8 @@ def main():
     ax2.imshow(ImgArray1b.reshape(32,32,3))
     ax3.imshow(ImgArray2a.reshape(32,32,3))
     ax4.imshow(ImgArray2b.reshape(32,32,3))
+
+    plt.savefig("FigurePart9", bbox_inches='tight')
     
 if __name__ == "__main__":
     main()
