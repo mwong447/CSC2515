@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Feb 21 13:35:33 2018
-
-@author: openaccount
-"""
-
 import os
 import hashlib
 import ssl

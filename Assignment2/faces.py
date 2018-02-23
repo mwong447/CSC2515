@@ -1,5 +1,7 @@
 import os
 import hashlib
+import ssl
+import socket
 from scipy.misc import imread
 from scipy.misc import imshow
 from scipy.misc import imresize
@@ -13,6 +15,7 @@ from torch.autograd import Variable
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.cbook as cbook 
 from scipy.io import loadmat
 
 
@@ -185,7 +188,6 @@ def shuffle(data, labels, percentage):
 
 # Second main function
 
-
 def main():
 
     # Declaring list of actors
@@ -232,7 +234,7 @@ def main():
 
     # Setting up the pytorch model
     dim_x = 32*32*3
-    dim_h = 50
+    dim_h = 20
     dim_out = 6
     dtype_float = torch.FloatTensor
     dtype_long = torch.LongTensor
@@ -244,16 +246,43 @@ def main():
     train_idx = np.random.permutation(range(trainData.shape[0]))[:200]
     x = Variable(torch.from_numpy(trainData[train_idx]), requires_grad=False).type(dtype_float)
     y_classes = Variable(torch.from_numpy(np.argmax(trainLabels[train_idx], 1)), requires_grad=False).type(dtype_long)
-    ################################################################################
 
-    learning_rate = 1e-3
+    iters=list()
+    train_accuracy=list()
+    valid_accuracy=list()
+
+    learning_rate = 1e-4
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    for t in range(10000):
+    for t in range(5000):
         y_pred = model(x)
         loss = loss_func(y_pred, y_classes)
         model.zero_grad()
         loss.backward()
         optimizer.step()
+        
+        iters.append(t) ##PLOT
+        
+        x_ = Variable(torch.from_numpy(trainData), requires_grad=False).type(dtype_float)
+        y_pred_ = model(x_).data.numpy()
+        
+        train_acc=(np.mean(np.argmax(y_pred_, 1) == np.argmax(trainLabels, 1)))
+        train_accuracy.append(train_acc)
+        
+        x_ = Variable(torch.from_numpy(validData), requires_grad=False).type(dtype_float)
+        y_pred_ = model(x_).data.numpy()
+        
+        valid_acc=(np.mean(np.argmax(y_pred_, 1) == np.argmax(validLabels, 1)))
+        valid_accuracy.append(valid_acc)     
+
+    x_plot=iters
+    y1_plot=train_accuracy
+    y2_plot=valid_accuracy 
+    plt.xlabel("Iterations")
+    plt.ylabel("Accuracy")
+    plt.plot(x_plot,y1_plot,'r--',label="Training Performance")
+    plt.plot(x_plot,y2_plot,'b--',label="Validation Performance")
+    plt.legend()
+    plt.show()
 
     x = Variable(torch.from_numpy(trainData), requires_grad=False).type(dtype_float)
     y_pred = model(x).data.numpy()
@@ -265,6 +294,50 @@ def main():
     y_pred = model(x).data.numpy()
     print("Test Accuracy: " + str(np.mean(np.argmax(y_pred, 1) == np.argmax(testLabels, 1))))
 
+    # filename = os.path.join(os.getcwd(), "cropped/")
+    # filename = filename + str("baldwin0.jpg")
+    # test = imread(filename)
+    # test = imresize(test, [32,32], 'nearest')
+    # plt.imshow(test)
+    # plt.show()
+    
+    ######  Visualization  ############
+    
+    # Select two examples - Visualization works better if there are only 20 neurons in the
+    #hidden layer
+    
+    ImgArray1a=model[0].weight.data.numpy()[7,:]
+    ImgArray2a=model[0].weight.data.numpy()[2,:]
 
+    ImgArray1b=ImgArray1a.copy()
+    ImgArray2b=ImgArray2a.copy()
+
+    # RGB value must be between 0-1; positive and negative weigts plotted separately
+    
+    ImgArray1a[ImgArray1a<0]=0
+    ImgArray2a[ImgArray2a<0]=0
+    ImgArray1b[ImgArray1b>0]=0
+    ImgArray2b[ImgArray2b>0]=0
+    
+    # Format - negative weights x(-1.0), RGB *100.0 to increase contrast
+    
+    ImgArray1a=ImgArray1a*100.0
+    ImgArray2a=ImgArray2a*100.0
+    ImgArray1b=ImgArray1b*-100.0
+    ImgArray2b=ImgArray2b*-100.0
+
+    f, ((ax1,ax2),(ax3,ax4))=plt.subplots(2, 2, sharex='col',sharey='row')
+    
+    ax1.set_title("Hidden Layer Visualization for 2 Actors")
+    ax1.axis("off")
+    ax2.axis("off")
+    ax3.axis("off")
+    ax4.axis("off")
+    
+    ax1.imshow(ImgArray1a.reshape(32,32,3))
+    ax2.imshow(ImgArray1b.reshape(32,32,3))
+    ax3.imshow(ImgArray2a.reshape(32,32,3))
+    ax4.imshow(ImgArray2b.reshape(32,32,3))
+    
 if __name__ == "__main__":
     main()
