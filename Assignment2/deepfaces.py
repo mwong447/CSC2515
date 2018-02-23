@@ -218,6 +218,58 @@ def shuffle(data, labels, percentage):
 
     return trainData, validData, testData, trainLabels, validLabels, testLabels
 
+def shuffle_1(data, labels, percentage):
+    # Getting the test data
+    complete = np.vstack((data, labels))
+    bracco = int(np.sum(complete[43264, :], axis=0))
+    gilpin = int(np.sum(complete[43265, :], axis=0))
+    harmon = int(np.sum(complete[43266, :], axis=0))
+    baldwin = int(np.sum(complete[43267, :], axis=0))
+    hader = int(np.sum(complete[43268, :], axis=0))
+    carell = int(np.sum(complete[43269, :], axis=0))
+
+    # creating actor-specific subarrays and extracting the first twenty examples
+    bracco_matrix = complete[:, :bracco]
+    gilpin_matrix = complete[:, bracco:bracco+gilpin]
+    harmon_matrix = complete[:, bracco+gilpin:bracco+gilpin+harmon]
+    baldwin_matrix = complete[:, bracco+gilpin+harmon:bracco+gilpin+harmon+baldwin]
+    hader_matrix = complete[:, bracco+gilpin+harmon+baldwin:bracco+gilpin+harmon+baldwin+hader]
+    carell_matrix = complete[:, bracco+gilpin+harmon+baldwin+hader:bracco+gilpin+harmon+baldwin+hader+carell]
+    test_bracco = bracco_matrix[:, :20]
+    test_gilpin = gilpin_matrix[:, :20]
+    test_harmon = harmon_matrix[:, :20]
+    test_baldwin = baldwin_matrix[:, :20]
+    test_hader = hader_matrix[:, :20]
+    test_carell = carell_matrix[:, :20]
+    testData = np.hstack((test_bracco, test_gilpin))
+    testData = np.hstack((testData, test_harmon))
+    testData = np.hstack((testData, test_baldwin))
+    testData = np.hstack((testData, test_hader))
+    testData = np.hstack((testData, test_carell))
+    testLabels = testData[43264:, :]
+    testData = testData[:-6, :]
+
+
+    # Need to do something similar for the remaining dataset
+
+    bracco_matrix = bracco_matrix[:, 20:]
+    gilpin_matrix = gilpin_matrix[:, 20:]
+    harmon_matrix = harmon_matrix[:, 20:]
+    baldwin_matrix = baldwin_matrix[:, 20:]
+    hader_matrix = hader_matrix[:, 20:]
+    carell_matrix = carell_matrix[:, 20:]
+    complete = np.hstack((bracco_matrix, gilpin_matrix))
+    complete = np.hstack((complete, harmon_matrix))
+    complete = np.hstack((complete, baldwin_matrix))
+    complete = np.hstack((complete, hader_matrix))
+    complete = np.hstack((complete, carell_matrix))
+    complete = np.transpose(complete)
+    np.random.shuffle(complete)
+    complete = np.transpose(complete)
+    trainData, validData = complete[:-6, :int(percentage*complete.shape[1])], complete[:-6, int(percentage*complete.shape[1]):int(complete.shape[1])]
+    trainLabels, validLabels = complete[43264:, :int(percentage*complete.shape[1])], complete[43264:, int(percentage*complete.shape[1]):int(complete.shape[1])]
+
+    return trainData, validData, testData, trainLabels, validLabels, testLabels
 
 
 class AnotherAlexNet(nn.Module):
@@ -286,17 +338,20 @@ def main():
     softmax = torch.nn.Softmax(dim=1)
     testvar = Variable(torch.from_numpy(X), requires_grad=False).type(dtype_float)
     all_probs = softmax(model.forward(testvar)).data.numpy()
-    trainData, validData, testData, trainLabels, validLabels, testLabels = shuffle(all_probs, Y, 0.8)
+    X = all_probs.copy()
+    X = X.reshape(-1, X.shape[0])
 
+    trainData, validData, testData, trainLabels, validLabels, testLabels = shuffle_1(X, Y, 0.8)
 
-    trainData = trainData.reshape(-1, trainData.shape[0]).T
-    validData = validData.reshape(-1, validData.shape[0]).T
-    testData = testData.reshape(-1, testData.shape[0]).T
+    trainData = np.transpose(trainData)
+    validData = np.transpose(validData)
+    testData = np.transpose(testData)
     trainLabels = np.transpose(trainLabels)
     validLabels = np.transpose(validLabels)
     testLabels = np.transpose(testLabels)
 
-
+    iters = list()  # PLOTTING
+    train_accuracy = list()  # PLOTTING
 
     model = torch.nn.Sequential(torch.nn.Linear(dim_x, dim_h), torch.nn.ReLU(), torch.nn.Linear(dim_h, dim_out), )
     loss_func = torch.nn.CrossEntropyLoss()
@@ -306,20 +361,44 @@ def main():
 
     learning_rate = 1e-3
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    for t in range(1):
+    for t in range(200):
         y_pred = model(x)
         loss = loss_func(y_pred, y_classes)
         model.zero_grad()
         loss.backward()
         optimizer.step()
 
+        iters.append(t)  ##PLOT
+
+        x_ = Variable(torch.from_numpy(trainData), requires_grad=False).type(dtype_float)
+        y_pred_ = model(x_).data.numpy()
+
+        train_acc = (np.mean(np.argmax(y_pred_, 1) == np.argmax(trainLabels, 1)))
+        train_accuracy.append(train_acc)
+
+    print("train")
     x = Variable(torch.from_numpy(trainData), requires_grad=False).type(dtype_float)
     y_pred = model(x).data.numpy()
     print(np.mean(np.argmax(y_pred, 1) == np.argmax(trainLabels, 1)))
+    print(np.sum(np.argmax(y_pred, 1) == np.argmax(trainLabels, 1)))
 
+    print("validation")
+    x = Variable(torch.from_numpy(validData), requires_grad=False).type(dtype_float)
+    y_pred = model(x).data.numpy()
+    print(np.mean(np.argmax(y_pred, 1) == np.argmax(validLabels, 1)))
+
+    print("test")
     x = Variable(torch.from_numpy(testData), requires_grad=False).type(dtype_float)
     y_pred = model(x).data.numpy()
     print(np.mean(np.argmax(y_pred, 1) == np.argmax(testLabels, 1)))
+
+    x_plot = iters
+    y1_plot = train_accuracy
+    plt.xlabel("Iterations")
+    plt.ylabel("Accuracy")
+    plt.plot(x_plot, y1_plot, 'r--', label="Training Performance")
+    plt.legend()
+    plt.show()
 
 
     # directory = os.path.join(os.getcwd(),"cropped227/")
