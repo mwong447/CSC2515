@@ -157,7 +157,7 @@ def test():
 
 # -------------------------------Part 2 Function Implementation------------------------------------------------------#
 def compute(X, W, b):
-    hypothesis = np.matmul(W.T, X)
+    hypothesis = np.matmul(np.transpose(W), X)
     hypothesis = hypothesis + b
     return hypothesis
 
@@ -167,7 +167,7 @@ def compute(X, W, b):
 def testPart2():
     # Load Data
     M = loadData()
-    train = loadTrain(M)
+    train, labels = loadTrain(M)
     # Testing computation function
     # Initialize weights and bias to random normal variables
     W = np.random.normal(0.0, 0.1, (784, 10))
@@ -549,11 +549,11 @@ def testPart6():
 
 def main():
     np.random.seed(1)
-    # testPart2()
+    testPart2()
     # testPart3()
     # test()
     #testPart4()
-    testPart5()
+    # testPart5()
     # testPart6()
 
 
