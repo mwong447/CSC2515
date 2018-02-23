@@ -1,7 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Feb 14 12:55:25 2018
+Created on Fri Feb 23 11:27:14 2018
 
+@author: Susan
+"""
+
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Feb 14 12:55:25 2018
 @author: Susan
 """
 
@@ -47,17 +53,36 @@ def loadTrain(M):
     training = training / 255.0
     return training, labels
 
+def loadTest(M):
+    # Initialize training data
+    testing = M["test0"]
+    # Initialize labels
+    labels = np.zeros((10, testing.shape[0]))
+    labels[0, :] = 1
+    # Get training data and labels
+    i = 1
+    while i < 10:
+        next = M["test" + str(i)]
+        new_labels = np.zeros((10, next.shape[0]))
+        new_labels[i, :] = 1
+        testing = np.vstack((testing, next))
+        labels = np.hstack((labels, new_labels))
+        i += 1
+    testing = np.transpose(testing)
+    testing = testing / 255.0
+    return testing, labels
 
-# Helper function to split data
+#-------------------------------------------------------------------------------
+# Helper function(s) to split data
 def split(data, labels, percentage):
     combined = np.vstack((data, labels))
     combined = np.transpose(combined)
     np.random.seed(1)
     np.random.shuffle(combined)
     combined = np.transpose(combined)
-    trainData, validData = combined[:-10, :int(percentage * combined.shape[1]) - 1], combined[:-10, int(
+    trainData, validData = combined[:-10, :int(percentage * combined.shape[1])], combined[:-10, int(
         percentage * combined.shape[1]):int(combined.shape[1])]
-    trainLabels, validLabels = combined[784:, :int(percentage * combined.shape[1]) - 1], combined[784:, int(
+    trainLabels, validLabels = combined[784:, :int(percentage * combined.shape[1])], combined[784:, int(
         percentage * combined.shape[1]):int(combined.shape[1])]
 
     return trainData, validData, trainLabels, validLabels
@@ -75,7 +100,7 @@ def traintestsplit(data_, labels_, ratio):
     test_x = Data_[:, size_:]
     test_y = Labels_[:, size_:]
     return train_x, train_y, test_x, test_y
-
+#---------------------------------------------------------------------------------
 
 # Helper function to display an MNIST data point.
 def display(x):
@@ -249,6 +274,9 @@ def testPart3():
 
 
 # -------------------------------Part 4 Implementation------------------------------------------------------#
+    
+    # VANILLA GD
+    
 def grad_descent(NLL, grad_NLL_W, grad_NLL_b, x, y, init_w, init_b, alpha, iterations):
     iters = list()
     costy = list()
@@ -282,7 +310,6 @@ def grad_descent(NLL, grad_NLL_W, grad_NLL_b, x, y, init_w, init_b, alpha, itera
     plt.show()
 
     return w, b
-
 
 # -------------------------------Part 6 Implementation------------------------------------------------------#
 
@@ -394,11 +421,6 @@ def grad_descent_6b(x, y, init_w, init_b, alpha, iterations):  # ,WW
     return Weights_m
 
 
-"""Produce a contour plot of the cost function, when the weights w1 and w2 are allowed to vary around the values 
-that you obtained in Part 5. 
-Plot the contour of the cost function. The cost function will be a function of the two weights. 
-The two weights w1 and w2 should vary around the value obtained in part 5. Label your axes"""
-
 # -------------------------------Part 4 Test------------------------------------------------------#
 
 def testPart4():
@@ -406,8 +428,11 @@ def testPart4():
     M = loadData()
     # Initialize training data
     data, labels = loadTrain(M)
-    trainData, validData, trainLabels, validLabels = split(data, labels, 0.2)
-    # trainData,trainLabels,validData,validLabels=traintestsplit(data,labels, 0.7)
+    #Creating a smaller set for testing speed
+    trainData, validData, trainLabels, validLabels = split(data, labels, 0.5)
+    
+    #traindData,trainLabels=loadTrain(M)
+    #validData,validLabels=loadTest(M)
 
     x = trainData.copy()
     y = trainLabels.copy()
@@ -439,8 +464,51 @@ def testPart4():
 
     return x, y, w_train, b_train
 
+# testing with Momentum ------------------------------------------------------#
+
+def testPart4w():
+    #Load data
+    M = loadData()
+    #Initialize training data
+    data, labels = loadTrain(M)
+    trainData, validData, trainLabels, validLabels = split(data,labels, 0.2)
+    #trainData,trainLabels,validData,validLabels=traintestsplit(data,labels, 0.7)
+    
+    x=trainData.copy()
+    y=trainLabels.copy()
+    
+    print(trainData.shape)
+    print(trainLabels.shape)
+    print(validData.shape)
+    print(validLabels.shape)
+    
+    np.random.seed(1)
+    W = np.random.normal(0.0,0.2,(784,10))
+    b = np.random.normal(0, 0.2,(10,1))
+        
+    w_train, b_train = grad_descent_w(NLL, grad_NLL_W, grad_NLL_b, trainData, trainLabels, W, b, 0.00001, 500)
+
+    trainPred = compute(trainData, w_train,b_train)
+    trainPred = np.argmax(trainPred,axis = 0)
+    trainLabels = np.argmax(trainLabels,axis = 0)
+    print("Training accuracy: " + str(np.sum(np.equal(trainPred,trainLabels))/(float(trainData.shape[1]))))
+
+    validPred = compute(validData,w_train,b_train)
+    validPred = np.argmax(validPred,axis = 0)
+    validLabels = np.argmax(validLabels,axis = 0)
+
+    print("Validation accuracy: " + str(np.sum(np.equal(validPred,validLabels))/(float(validData.shape[1]))))
+    
+    print (W.shape)
+    print (W)
+    
+    return x,y,w_train,b_train
+
 
 # -------------------------------Part 5 Implementation------------------------------------------------------#
+    
+# MOMENTUM GRADIENT DESCENT
+    
 def grad_descent_w(NLL, grad_NLL_W, grad_NLL_b, x, y, init_w, init_b, alpha, iterations):
     iters = list()
     costy = list()
@@ -539,22 +607,95 @@ def Plot_Contour(Weights, Weights_m, x, y, w_train, b_train):
 
 
 def testPart6():
-    x, y, w_train, b_train = testPart4()
+    x, y, w_train, b_train = testPart4w()
     Weights = grad_descent_6(x, y, w_train, b_train, 0.017, 20)
     Weights_m = grad_descent_6b(x, y, w_train, b_train, 0.017, 20)
     Plot_Contour(Weights, Weights_m, x, y, w_train, b_train)
+    
+def testPart6b():
+    #this code compares learning curves of vanilla and and momentum gradient descent on the same graph -
+    # they have been plotted individually in the code above
+    M = loadData()
+    data, labels = loadTrain(M)
+    # Going to use only a portion of the data for efficiency 
+    trainData, validData, trainLabels, validLabels = split(data,labels, 0.2)
+    
+    x=trainData.copy()
+    y=trainLabels.copy()
+    
+    np.random.seed(1)
+    W = np.random.normal(0.0,0.2,(784,10))
+    np.random.seed(1)
+    b = np.random.normal(0, 0.2,(10,1))
+    
+    #### Have to return the iters and cost from gradient descent functions here
+    w_train1, b_train1, iters1,cost1 = grad_descent(NLL, grad_NLL_W, grad_NLL_b, x, y, W, b, 0.00001, 500)
+    
+    np.random.seed(1)
+    W = np.random.normal(0.0,0.2,(784,10))
+    np.random.seed(1)
+    b = np.random.normal(0, 0.2,(10,1))
+    
+    w_train2, b_train2, iters2,cost2 = grad_descent_w(NLL, grad_NLL_W, grad_NLL_b, x, y, W, b, 0.00001, 500)
+    
+    x_plot = iters1
+    y1_plot= cost1
+    y2_plot=  cost2
+    plt.xlabel("Iteration")
+    plt.ylabel("Log Loss")
+    plt.title("Momentum Vs. Vanilla Gradient Descent")
+    plt.plot(x_plot,y1_plot,'r--', label="Vanilla")
+    plt.plot(x_plot,y2_plot,'b--', label="Momentum")
+    plt.legend()
+    plt.show()
 
+# ~~ Extra Code ~~ For Saving Images into Report ~ ----------------------------#
+    
+def print_digit(MNISTNumber):
+    
+    M = loadmat("mnist_all.mat")
+
+    f, ((ax1, ax2, ax3, ax4, ax5), (ax6, ax7, ax8, ax9, ax10)) = plt.subplots(2, 5, sharex='row', sharey='col')
+    
+    Number = str(MNISTNumber)
+    Index = "train"+ Number
+    Title = "Examples of digit " + str(Number) + " from MNIST"
+    
+    
+    ax1.set_title(Title)
+    ax1.axis('off'), ax2.axis('off'), ax3.axis('off'), ax4.axis('off'), ax5.axis('off'), ax6.axis('off')
+    ax7.axis('off'), ax8.axis('off'), ax9.axis('off'), ax10.axis('off')
+    
+    ax1.imshow(M[Index][10].reshape((28,28)), cmap=cm.gray)
+    ax2.imshow(M[Index][21].reshape((28,28)), cmap=cm.gray)
+    ax3.imshow(M[Index][32].reshape((28,28)), cmap=cm.gray)
+    ax4.imshow(M[Index][43].reshape((28,28)), cmap=cm.gray)
+    ax5.imshow(M[Index][54].reshape((28,28)), cmap=cm.gray)
+    ax6.imshow(M[Index][65].reshape((28,28)), cmap=cm.gray)
+    ax7.imshow(M[Index][76].reshape((28,28)), cmap=cm.gray)
+    ax8.imshow(M[Index][100].reshape((28,28)), cmap=cm.gray)
+    ax9.imshow(M[Index][152].reshape((28,28)), cmap=cm.gray)
+    ax10.imshow(M[Index][100].reshape((28,28)), cmap=cm.gray)
+    
+    Save_As_="Mnist"+str(Number)+".jpg"
+
+    savefig(Save_As_,bbox_inches = 'tight')
+    
+    
+
+
+#------------------------------------------------------------------------------#
 
 # Main Function
 
 def main():
     np.random.seed(1)
-    testPart2()
+    #testPart2()
     # testPart3()
     # test()
     #testPart4()
     # testPart5()
-    # testPart6()
+    testPart6()
 
 
 if __name__ == "__main__":
