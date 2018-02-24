@@ -689,7 +689,14 @@ Based on the code snippet above, the result after feeding a 3 $\times$ 227 $\tim
 \end{enumerate}
 The Cross-Entropy loss was selected as the cost function.  The optimizer used was the Adam optimizer.  We attempted modification of the optimizer, number of iterations and the number of hidden neurons in the hidden layer, but unfortunately, due to the high computational cost of running the entire training set through the AlexNet, limited trial runs were conducted.  Despite this however, we were able to obtain 100\% accuracy on both the training and validation sets and approximately 60\% accuracy on the test set (using a 80:20 split on the training set for training and validation, and 120 images in the test set).  Based on our test set, we observed that the training set was not proportional in the actors.  The script we wrote could download up to 130 images for each other; and while there were 130 images for some actors, there was less than 100 for others (e.g. Gilpin).  In retrospect, it would have been preferable to normalize the number of each actor in the training set, thereby potentially increasing performance on the test set (i.e. the training set distribution was not representative of the test set distribution).
 \par
-We attempted to test this behaviour by modifying our script only split the dataset into training and validatio - here, we observed a 100\% training accuracy and 98\% validation accuracy, potentially indicating that there may have been something wrong with the original split function.
+We attempted to test this behaviour by modifying our script only split the dataset into training and validatio - here, we observed a 100\% training accuracy and 98\% validation accuracy, potentially indicating that there may have been something wrong with the original split function.  A plot of the learning curve for this section (for the training set only, due to computational limitations) is shown below.
+\begin{center}
+\begin{figure}[!ht]\centering
+\includegraphics{Mnist-Question10.jpg}
+\caption{Learning Curve for the extracted AlexNet and the implemented neural network}
+\end{figure}
+\end{center}
+
 \end{homeworkProblem}
 \clearpage
 \end{document}
