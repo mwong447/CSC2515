@@ -178,11 +178,11 @@
 %	NAME AND CLASS SECTION
 %----------------------------------------------------------------------------------------
 
-\newcommand{\hmwkTitle}{Assignment 1} % Assignment title
+\newcommand{\hmwkTitle}{Assignment 2 - Deep NN} % Assignment title
 \newcommand{\hmwkDueDate}{Friday,\ February 23,\ 2018} % Due date
 \newcommand{\hmwkClass}{CSC2515} % Course/class
 \newcommand{\hmwkClassTime}{L0101} % Class/lecture time
-\newcommand{\hmwkAuthorName}{Matthew Wong, Susanne Pyda} % Your name
+\newcommand{\hmwkAuthorName}{M.Wong, S.Pyda} % Your name
 
 %----------------------------------------------------------------------------------------
 %	TITLE PAGE
@@ -213,7 +213,7 @@
 
 \noindent \textit{Introductory information and readme instructions}
 
-Attached, you will find the required submissions \textit{digits.py, faces.py, deepfaces.py, deepnn.tex  \& faces.pdf} in addition to two folders - both containing an appropriate amount of pictures for each actor/actress.  Comments about the code are located in each of the source files. Code was written in Python 3.5 with the Anaconda environment - the packages used are outlined at the beginning of the file.
+This submissions containts the required files:  \textit{digits.py, faces.py, deepfaces.py, deepnn.tex  \& faces.pdf} in addition to two folders - both containing an previously downloaded pictures for each actor/actress. The downloading code can be found in the source files.  Comments about the code are located in each of the source files. Code was written in Python 3.5 with the Anaconda environment - the packages used are outlined at the beginning of the file.
 
 
 
@@ -229,7 +229,49 @@ Attached, you will find the required submissions \textit{digits.py, faces.py, de
 
 \noindent \textit{Dataset description}
 
-TALK ABOUT MNIST DATASET HERE - make some BS up, who cares
+In parts 1 through , the MNIST dataset of handwritten digits will be used: \textit{mnist\_all.mat}. The data is loaded in the form of a python dictionary. It is already split into training and testing sets - with 60 000 digits in the training and 10 000 in testing, and is also split by digit which can be accessed with \textit{train[digit]}. The number of of each digit in test/train is approximately equal although there are variations between digits. The digit data is in the form of a 784 integer array, representing the flattened pixel intensities of 28 by 28 pixel images. 
+\\
+
+10 examples of each digit are shown below:
+\\
+
+\begin{center}
+\begin{figure}[!ht]\centering
+\begin{subfigure}{.3\textwidth}\centering
+  \includegraphics[scale=0.3]{Mnist0.jpg}
+\end{subfigure}
+\begin{subfigure}{.3\textwidth}\centering
+  \includegraphics[scale=0.3]{Mnist1.jpg}
+\end{subfigure}
+\begin{subfigure}{.3\textwidth}\centering
+  \includegraphics[scale=0.3]{Mnist2.jpg}
+\end{subfigure}
+\begin{subfigure}{.3\textwidth}\centering
+  \includegraphics[scale=0.3]{Mnist3.jpg}
+\end{subfigure}
+\begin{subfigure}{.3\textwidth}\centering
+  \includegraphics[scale=0.3]{Mnist4.jpg}
+\end{subfigure}
+\begin{subfigure}{.3\textwidth}\centering
+  \includegraphics[scale=0.3]{Mnist5.jpg}
+\end{subfigure}
+\begin{subfigure}{.3\textwidth}\centering
+  \includegraphics[scale=0.3]{Mnist6.jpg}
+\end{subfigure}
+\begin{subfigure}{.3\textwidth}\centering
+  \includegraphics[scale=0.3]{Mnist7.jpg}
+\end{subfigure}
+\begin{subfigure}{.3\textwidth}\centering
+  \includegraphics[scale=0.3]{Mnist8.jpg}
+\end{subfigure}
+\begin{subfigure}{.3\textwidth}\centering
+  \includegraphics[scale=0.3]{Mnist9.jpg}
+\end{subfigure}
+\caption{Digits from MNIST}
+\end{figure}
+\end{center}
+
+
 
 \end{homeworkProblem}
 \clearpage
@@ -239,6 +281,11 @@ TALK ABOUT MNIST DATASET HERE - make some BS up, who cares
 
 \begin{homeworkProblem}
 \noindent \textit{Computation of the provided Network.}
+\\
+
+The network provided in Part 2 is shown below:
+
+  \includegraphics[scale=0.3]{Mnist-Question2.jpg}
 
 The source code to compute the assigned network is provided below.
 \begin{lstlisting}
@@ -262,7 +309,7 @@ def testPart2():
     print(softmax(hypothesis))
 \end{lstlisting}
 
-Output from the test case:
+Output (after applying softmax) from the test case:
 \begin{lstlisting}
 [[ 0.02681158  0.0532326   0.04155301 ...,  0.02401518  0.05461363
    0.09298066]
@@ -280,7 +327,7 @@ Output from the test case:
 \end{lstlisting}
 \end{homeworkProblem}
 \clearpage
-%----------------------------------------------------------------------------------------
+
 
 %----------------------------------------------------------------------------------------
 %	PROBLEM 3
@@ -290,7 +337,32 @@ Output from the test case:
 \noindent \textit{Gradient derivation and vectorized format}
 
 \begin{enumerate}[label=(\Alph*)]
-\item NEED TO WRITE THE PROOF HERE
+\item 
+
+For the network described above, the cost function used will be the sum of negative log-probabilities.
+\\
+This cost function, summed over training examples is:
+\\
+$C=-\sum_jy_jlogp_j$
+\\
+Where y is the actual target and p is the predicted value.
+\\
+The output $p_i$ is the calculated the softmax function to $o_i$,:
+\\
+$p_i=\frac{e^{o_i}}{\sum_je^{o_j}}$, \hspace{0.25cm} $o_i=\sum_jx_jw_{ij}$
+\\
+We use the chain rule to find $\frac{dC}{dw_{ij}}$:
+\\
+$\frac{dC}{dw_{ij}}=\frac{dC}{dp_i}\frac{dp_i}{do_i}\frac{do_i}{dw_{ij}}$
+\\
+$\frac{dp_i}{do_i}=\frac{e^{o_i}}{\sum_je^{o_i}}-\big( \frac{e^{o_i}}{\sum_je^{o_i}}\big)^2=p_i(1-p_i)$
+\\
+$\frac{do_i}{dw_{ij}}=x_j$
+\\
+$\frac{dC}{do_i}=\sum_j\frac{dC}{dp_j}\frac{dp_j}{do_i}$
+
+
+
 \item The source code for computing the gradient is shown below.
 \begin{lstlisting}
 def grad_NLL_W(y, o, layer):
@@ -402,8 +474,19 @@ Gradient matrix: [[  3.36017608e-03]
 \begin{homeworkProblem}
 \noindent \textit{Gradient Descent Training}
 
-For the Vanilla Gradient Descent algorithm, we decided to initialize both the weights and biases from a normal distribution, centered at 0, with mean 0.2, of shape (784, 10) and (10, 1) respectively.  Furthermore, we selected the learning rate to be 0.00001.  We opted not to scale the loss function by the number of training examples - hence explaining the relatively low learning that other teams may have used in their experiments.  We attempted to modify the type of distribution, the learning rate and the number of iterations and determined that the reported results were the best (e.g. the network converges relatively quickly at 500 iterations - we tested it to approximately 5000 iterations, but we found that the cost would increase after 2500, with very little impact on performance.
+For the Vanilla Gradient Descent algorithm, the weights and biases were sampled from the normal distribution around a mean of 0 and standard deviation of 0.2, using \textit{numpy.random.normal}. The weights and biases were initialized with shapes (784, 10) and (10, 1) respectively. 
+\\
 
+The optimization procedure for gradient descent involved testing: the type of distribution used in weight and bias initializiation, the learning rate, and the number of iterations. The reported results proved to be optimial.  The  network converges relatively quickly at 500 iterations - although itwas tested up to approximately 5000 iterations, however this had little accuracy on validation performance. The learning curve is shown below. 
+
+
+By trial and error, a learning rate of 0.00001 was selected. The learning rate was chosen to optimize convergence time - a low learning rate resulted in slow convergence time, and a high learning rate resulted in fluctuations and hindered convergence.  
+\\
+
+The log loss is plotted against the number of iterations ( at this stage different methods are being compared for the same number of training examples so it was not necessary to divide loss by number of examples). 
+\\
+
+\includegraphics[scale=1]{Mnist-Question4.jpg}
 
 
 \end{homeworkProblem}
@@ -414,17 +497,64 @@ For the Vanilla Gradient Descent algorithm, we decided to initialize both the we
 %----------------------------------------------------------------------------------------
 
 \begin{homeworkProblem}
-\noindent \textit{Investigating overfitting}
+\noindent \textit{Gradient Descent With Momentum}
+\\
 
-The results from varying the training size on the training and validation accuracies are shown below.
-\begin{center}
-\begin{figure}[h]
-\includegraphics[scale=0.75, width=\linewidth]{Trainsize.jpg}
-\caption{Graph comparing size of training set size vs. training accuracy and validation in increments of 50 images}
-\label{fig:Trainsize}
-\end{figure}
-\end{center}
-A potential explanation for the results in the figure may be that the training and validation sets, when split amongst the individual actors, may be favouring some actors over others.  There is an intersection at 100 training examples, and it appears the the accuracy between the two sets is almost identical.  The fact that there is a large discrepancy between the accuracies between a training sample size of ~180 to ~300 (e.g. validation accuracy stays relatively constant) may reveal support for the above claim that actors are not being represented properly, presumably due to a lack of rigour in the splitting between data sets for the individual actors.  Upon testing on the other actors and actresses not included in $act$, the validation accuracy obtained was $69\%$.  As outlined in the \textbf{Post-Mortem Addendum} in Section 2, the selection of data from the images may also have played a role in this behaviour.
+Momentum is used in gradient descent to dampen oscillation and include an directional accumulation term to increase speed:
+\\
+The paramter update rule for momentum, as  provided in lecture notes is:
+\\
+
+$\nu\leftarrow\gamma\nu+\alpha\frac{dC}{dW}$
+\\
+$W\leftarrow W-\nu$
+\\
+
+Where $\gamma$ is the momentum term and $\alpha$ is the learning rate. C is the cost, and W is the parameter (weight) being updated. 
+The momentum rate was set to 0.5 based on some initial tests, however the number could be optimized further for better/faster performance. This momentum rate was sufficient to demonstrate its effect.
+\\
+The function for vectorized momentum is shown below.
+
+\begin{lstlisting}
+\# MOMENTUM GRADIENT DESCENT
+    
+def grad_descent_w(NLL, grad_NLL_W, grad_NLL_b, x, y, init_w, init_b, alpha, iterations):
+    iters = list()
+    costy = list()
+
+    EPS = 1e-5
+    prev_w = init_w - 10 * EPS
+    prev_b = init_b - 10 * EPS
+    w = init_w.copy()
+    b = init_b.copy()
+    max_iter = iterations
+    iter = 0
+
+    v = np.zeros((784, 10))
+    v[:, :] = 0.000001  # Initialize
+    momentum_rate = 0.5
+
+    while np.linalg.norm(w - prev_w) > EPS and iter < max_iter and np.linalg.norm(b - prev_b) > EPS:
+        prev_w = w.copy()
+        prev_b = b.copy()
+        grad_desc = alpha * (grad_NLL_W(y, compute(x, w, b), x))
+        mv = np.multiply(momentum_rate, v)
+        v = np.add(mv, grad_desc)
+        w -= v
+        b -= alpha * (grad_NLL_b(y, compute(x, w, b)))
+        if iter % 10 == 0:
+            print("Iteration: " + str(iter))
+            print("Cost: " + str(NLL(y, compute(x, w, b))))
+            cost_i = NLL(y, compute(x, w, b))
+            iters.append(iter)
+            costy.append(cost_i)
+        iter += 1
+\end{lstlisting}
+
+The figure below shows the learning curve on train data for gradient descent with and without momentum. It can be observed that momentum increases convergence speed.
+
+\includegraphics[scale=1]{Mnist-Question5.jpg}
+
 
 \end{homeworkProblem}
 \clearpage
@@ -434,150 +564,27 @@ A potential explanation for the results in the figure may be that the training a
 %----------------------------------------------------------------------------------------
 
 \begin{homeworkProblem}
-\noindent \textit{Mathematical Derivations of Gradient Descent}
-\begin{enumerate}[label=(\Alph*)]
-\item We can compute $\frac{\partial J}{\partial \theta_{pq}}$ by expanding the expression as outlined in the assignment documentation as follows:
-\begin{center}
-$J(\theta)=\sum_{i}\big((\theta^Tx^{(i)}-y^{(i)})^2_1+(\theta^Tx^{(i)}-y^{(i)})^2_2+\ldots+(\theta^Tx^{(i)}-y^{(i)})^1_j\big)$
-\linebreak
-$J(\theta)=(\theta^Tx^{(1)}-y^{(1)})^2_1+(\theta^Tx^{(1)}-y^{(1)})^2_2+\ldots(\theta^Tx^{(1)}-y^{(1)})^1_j+(\theta^Tx^{(2)}-y^{2)})^2_1+\ldots + (\theta^Tx^{(i)}-y^{(i)})^2_j$
-\end{center}
-Therefore, it appears we can model this double summation as a summation over the $p^{th}$ column and $q^{th}$ row.  Therefore, the partial derivative of a specific element, say, element $pq$ can be expressed as:
-\begin{center}
-$\boxed{\frac{\partial J}{\partial \theta _{pq}}=2x^{p}_{q}(\theta^T x^{p}-y^{p})_q}$
-\end{center}
-\item Based on the assignment specification, let $X$ be a matrix of size $n \times m$, where $n$ is the number of features and $m$ is the number of training examples.  Let $\theta$ be a matrix of size $k \times n$, where $k$ is the number of features.  Let $Y$ be a $k \times m$ matrix.  The provided expression taken from the assignment specification, with matrices substituted into their respective variables, gives the following expression:
-\[2\begin{bmatrix}
-x_{11} & \dots & x_{1m} \\
-\vdots & \ddots & \vdots \\
-x_{n1} & \dots & x_{nk}
-\end{bmatrix}\times
-\Bigg[\begin{bmatrix}
-\theta_{11} & \dots & \theta_{1n} \\
-\vdots & \ddots & \vdots \\
-\theta_{k1} & \dots & \theta_{kn}
-\end{bmatrix}^T \times
-\begin{bmatrix}
-x_{11} & \dots & x_{1m} \\
-\vdots & \ddots & \vdots \\
-x_{n1} & \dots & x_{nm}
-\end{bmatrix} - 
-\begin{bmatrix}
-y_{11} & \dots & y_{1m} \\
-\vdots & \ddots & \vdots \\
-y_{k1} & \dots & y_{km}
-\end{bmatrix}\Bigg]^T
-\]
+\noindent \textit{Contours of Gradient Descent}
 
-Simplification:
-\[\begin{bmatrix}
-2x_{11} & \dots & 2x_{1m} \\
-\vdots & \ddots & \vdots \\
-2x_{n1} & \dots & 2x_{nk}
-\end{bmatrix}\times
-\begin{bmatrix}
-\theta_{11}x_{11}+\ldots +  \theta_{k1}x_{n1}-y_{11} & \dots \\
-\vdots & \vdots  \\
-\dots  & \theta_{1n}x_{1m}+\ldots+\theta_{kn}x_{nm}-y_{km}
-\end{bmatrix}^T
-\]
-If the above matrix computation is carried out, we can observe, from part A, that the $pq$ term in the derivative of the cost function refers to an element within this gradient matrix.  For example, the top left hand side derivative, e.g. $\frac{\partial J}{\partial \theta_{11}}=2x_{11}(\theta_{11}x_{11}+\ldots + \theta_{k1}x_{n1}-y_{11}$.
-\textbf{Note:}  The top left hand corner element of the gradient was selected for ease of computation, but any element within this gradient matrix would be valid.
-\begin{lstlisting}
-#Cost Function
-def f2(x,y,theta):
-    ones = np.ones((1,x.shape[1]))
-    x = np.vstack((ones,x))
-    hypothesis = np.matmul(theta.T,x)
-    loss = np.power((hypothesis-y),2)
-    return np.sum(loss)
-\end{lstlisting}
-\begin{lstlisting}
-#Gradient Function
-def df2(x,y,theta):
-    ones = np.ones((1,x.shape[1]))
-    x = vstack((ones,x))
-    hypothesis = np.matmul(np.transpose(theta),x)-y
-    hypothesis = np.transpose(hypothesis)
-    gradient = 2*np.matmul(x,hypothesis)
-    return gradient
-\end{lstlisting}
-\item The code for testing the implementation of the cost and gradient is shown below.
-\begin{lstlisting}
-#Testing the cost and gradient functionality
-def part6():
-    #Testing the loss function
-    x = np.random.normal(0,0.6,(20,15))
-    y = np.random.normal(0.2,0.4,(5,15))
-    theta = np.random.normal(-0.1,0.3,(21,5))
-    h = 0.00001
-    #Cost of individual component
-    testarr1 = np.zeros(theta.shape)
-    testarr1[3,4] = h
-    print("Cost is:")
-    print((f2(x,y,theta+testarr1)-f2(x,y,theta-testarr1))/(2*h))
-    print("Gradient is:")
-    print(df2(x,y,theta)[3,4])
-    testarr2 = np.zeros(theta.shape)
-    testarr2[1,4] = h
-    print("Cost is:")
-    print((f2(x,y,theta+testarr2)-f2(x,y,theta-testarr2))/(2*h))
-    print("Gradient is:")
-    print(df2(x,y,theta)[1,4])
-    testarr3 = np.zeros(theta.shape)
-    testarr3[2,3] = h
-    print("Cost is:")
-    print((f2(x,y,theta+testarr3)-f2(x,y,theta-testarr3))/(2*h))
-    print("Gradient is:")
-    print(df2(x,y,theta)[2,3])
-    testarr4 = np.zeros(theta.shape)
-    testarr4[8,4] = h
-    print("Cost is:")
-    print((f2(x,y,theta+testarr4)-f2(x,y,theta-testarr4))/(2*h))
-    print("Gradient is:")
-    print(df2(x,y,theta)[8,4])
-    testarr5 = np.zeros(theta.shape)
-    testarr5[10,1] = h
-    print("Cost is:")
-    print((f2(x,y,theta+testarr5)-f2(x,y,theta-testarr5))/(2*h))
-    print("Gradient is:")
-    print(df2(x,y,theta)[10,1])
-\end{lstlisting}
-The output that results from execution of this code is below:
-\begin{lstlisting}
-Cost is:
--8.507892229658864
-Gradient is:
--8.5078922306346
-Cost is:
--5.070817460506305
-Gradient is:
--5.070817460432679
-Cost is:
--11.655092452400593
-Gradient is:
--11.655092451975934
-Cost is:
--3.5024079892309596
-Gradient is:
--3.5024079896724483
-Cost is:
--0.24353752436923057
-Gradient is:
--0.2435375237734189
-\end{lstlisting}
-The $h$ was selected so as to try to compute a small difference, similar to the definition of the derivative - as $h$ further decreases, you would observe that the gradient and incremental difference in cost appear to converge.
-\end{enumerate}
+In this section, the effectiveness of gradient descent moving towards a minima will be demonstrated on contour plots. The weights chosen were at $init\_w[490,3]$ and  $init\_w[490,3]$. These weights were chosen because by checking the corresponding values on the digits, to ensure that they were not all 0s would not have an effect on the output. When the weights were allowed to vary around the vales obtained in Part 5, without gradient descent, they did not move towards the local minima. 
+\\
+The weights were moved $\pm$ 0.15 from their trained values. The learning rate was increased to 0.017, and 20 iterations were run.
+\\
+\includegraphics[scale=1]{Mnist-Question6.jpg}
+\\
+As shown in the figure momentum results in a faster path towards the minimum with fewer oscillations. The momentum term in the update introduces memory and allows the learning process to accelerate in consistent directions. 
+\\
+
+An example of momentum not being effective, would be as stated above, where the weights correspond to pixels of 0 or close to 0. In the example below, the weights chosen were changed to at $init\_w[10,3]$ and $init\_w[11,3]$, which may have been closer to the sides. It can be seen from the contours that they are more linear and  less effected by the weights. Momentum could be less effective, or very similar to vanilla gradient descent, when there is already a 'smooth' path towards the minima.
+
+\includegraphics[scale=1]{Mnist-Question6e.jpg}
 
 \end{homeworkProblem}
 \clearpage
 %----------------------------------------------------------------------------------------
 %	PROBLEM 7
 %----------------------------------------------------------------------------------------
-
 \begin{homeworkProblem}
-
-\noindent \textit{Linear Regression with Multiple Actors}
 
 Running the linear regression classifier results in a training accuracy of $89\%$ and a validation accuracy of $56\%$.  Both the $\alpha$ and number of iterations were modified, to varying degrees of success - however, it is worth noting that the validation accuracy is significantly lower than the training accuracy which may be a symptom of overfitting.
 \par Two loops were written in order to obtain the training hypothesis and validation hypothesis labels.  The steps are written below.
@@ -619,38 +626,33 @@ An example of this for the training data is shown below.
 %	PROBLEM 8
 %----------------------------------------------------------------------------------------
 \begin{homeworkProblem}
+\noindent \textit{Training a single-hidden-layer fully connected network}
+
+The provided source was modified to train a single-hidden layer, fully-connected neural network to classify actors and actresses from Project 1, assuming the original list of actors and actresses were the following:
+\begin{lstlisting}
+act =['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
+\end{lstlisting}
+
+The neural network architecture involved a fully connected layer (Linear), followed by ReLU activation (activation), followed by another fully connected layer (Linear) with input dimensions of 32*32*3 (e.g. 32 $\times$ 32 $\times$ 3 representing the pixel areas and colour channels), 20 hidden neurons, and finally a output layer consisting of 6 output units.  The Cross Entropy cost was minimized as the cost function.  Furthermore, experimentation involving the learning rate, $\alpha$, number of iterations, as well as batch size was conducted, leading to an optimal learning rate of 0.0001, 5000 iterations, and a batch size of approximately 200 (out of a total 450 training examples).  After training, the accuracy for the training set, validation set and test set were 87.3\%, 84.9\% and 79.2\% respectively.  A plot of the training \& validation accuracies throughout the training are shown below.
+\begin{center}
+\begin{figure}[!ht]\centering
+\includegraphics{Mnist-Question8.jpg}
+\caption{Training \& Validation performance for Part 8}
+\end{figure}
+
+\end{center}
+
+\end{homeworkProblem}
+\clearpage
+
+%----------------------------------------------------------------------------------------
+%	PROBLEM 8
+%----------------------------------------------------------------------------------------
+\begin{homeworkProblem}
 \noindent \textit{Visualizing $\theta 's$ with multiple label matrix}
 
 The 6 figures below show the visualized $\theta 's$ for training on the full set of actors in $act$ with the label matrix, as outlined in the assignment specification.
-\begin{center}
-\begin{figure}[!ht]\centering
-\begin{subfigure}{.3\textwidth}\centering
-  \includegraphics[width=.3\linewidth]{thetas0.jpg}
-  \caption{Baldwin $\theta 's$}
-\end{subfigure}
-\begin{subfigure}{.3\textwidth}\centering
-  \includegraphics[width=.3\linewidth]{thetas1.jpg}
-  \caption{Bracco $\theta 's$}
-\end{subfigure}
-\begin{subfigure}{.3\textwidth}\centering
-  \includegraphics[width=.3\linewidth]{thetas2.jpg}
-  \caption{Carell $\theta 's$}
-\end{subfigure}
-\begin{subfigure}{.3\textwidth}\centering
-  \includegraphics[width=.3\linewidth]{thetas3.jpg}
-  \caption{Gilpin $\theta 's$}
-\end{subfigure}
-\begin{subfigure}{.3\textwidth}\centering
-  \includegraphics[width=.3\linewidth]{thetas4.jpg}
-  \caption{Hader $\theta 's$}
-\end{subfigure}
-\begin{subfigure}{.3\textwidth}\centering
-  \includegraphics[width=.3\linewidth]{thetas5.jpg}
-  \caption{Harmon $\theta 's$}
-\end{subfigure}
-\caption{$\theta$ values for each individual actor}
-\end{figure}
-\end{center}
+
 A potential explanation for the lack of "face-like" appearance in $\theta 's $ obtained after training may be that the size of the training set is too large for each actor.  As observed in part 4, with only two actors from the Baldwin and Carell sets, the $\theta 's$ visualized more resembled faces.
 \end{homeworkProblem}
 \clearpage
@@ -662,75 +664,7 @@ A potential explanation for the lack of "face-like" appearance in $\theta 's $ o
 \noindent \textit{Visualizing $\theta 's$ with multiple label matrix}
 
 The 6 figures below show the visualized $\theta 's$ for training on the full set of actors in $act$ with the label matrix, as outlined in the assignment specification.
-\begin{center}
-\begin{figure}[!ht]\centering
-\begin{subfigure}{.3\textwidth}\centering
-  \includegraphics[width=.3\linewidth]{thetas0.jpg}
-  \caption{Baldwin $\theta 's$}
-\end{subfigure}
-\begin{subfigure}{.3\textwidth}\centering
-  \includegraphics[width=.3\linewidth]{thetas1.jpg}
-  \caption{Bracco $\theta 's$}
-\end{subfigure}
-\begin{subfigure}{.3\textwidth}\centering
-  \includegraphics[width=.3\linewidth]{thetas2.jpg}
-  \caption{Carell $\theta 's$}
-\end{subfigure}
-\begin{subfigure}{.3\textwidth}\centering
-  \includegraphics[width=.3\linewidth]{thetas3.jpg}
-  \caption{Gilpin $\theta 's$}
-\end{subfigure}
-\begin{subfigure}{.3\textwidth}\centering
-  \includegraphics[width=.3\linewidth]{thetas4.jpg}
-  \caption{Hader $\theta 's$}
-\end{subfigure}
-\begin{subfigure}{.3\textwidth}\centering
-  \includegraphics[width=.3\linewidth]{thetas5.jpg}
-  \caption{Harmon $\theta 's$}
-\end{subfigure}
-\caption{$\theta$ values for each individual actor}
-\end{figure}
-\end{center}
-A potential explanation for the lack of "face-like" appearance in $\theta 's $ obtained after training may be that the size of the training set is too large for each actor.  As observed in part 4, with only two actors from the Baldwin and Carell sets, the $\theta 's$ visualized more resembled faces.
-\end{homeworkProblem}
-\clearpage
 
-%----------------------------------------------------------------------------------------
-%	PROBLEM 8
-%----------------------------------------------------------------------------------------
-\begin{homeworkProblem}
-\noindent \textit{Visualizing $\theta 's$ with multiple label matrix}
-
-The 6 figures below show the visualized $\theta 's$ for training on the full set of actors in $act$ with the label matrix, as outlined in the assignment specification.
-\begin{center}
-\begin{figure}[!ht]\centering
-\begin{subfigure}{.3\textwidth}\centering
-  \includegraphics[width=.3\linewidth]{thetas0.jpg}
-  \caption{Baldwin $\theta 's$}
-\end{subfigure}
-\begin{subfigure}{.3\textwidth}\centering
-  \includegraphics[width=.3\linewidth]{thetas1.jpg}
-  \caption{Bracco $\theta 's$}
-\end{subfigure}
-\begin{subfigure}{.3\textwidth}\centering
-  \includegraphics[width=.3\linewidth]{thetas2.jpg}
-  \caption{Carell $\theta 's$}
-\end{subfigure}
-\begin{subfigure}{.3\textwidth}\centering
-  \includegraphics[width=.3\linewidth]{thetas3.jpg}
-  \caption{Gilpin $\theta 's$}
-\end{subfigure}
-\begin{subfigure}{.3\textwidth}\centering
-  \includegraphics[width=.3\linewidth]{thetas4.jpg}
-  \caption{Hader $\theta 's$}
-\end{subfigure}
-\begin{subfigure}{.3\textwidth}\centering
-  \includegraphics[width=.3\linewidth]{thetas5.jpg}
-  \caption{Harmon $\theta 's$}
-\end{subfigure}
-\caption{$\theta$ values for each individual actor}
-\end{figure}
-\end{center}
 A potential explanation for the lack of "face-like" appearance in $\theta 's $ obtained after training may be that the size of the training set is too large for each actor.  As observed in part 4, with only two actors from the Baldwin and Carell sets, the $\theta 's$ visualized more resembled faces.
 \end{homeworkProblem}
 \clearpage
