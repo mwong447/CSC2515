@@ -354,8 +354,6 @@ $p_i=\frac{e^{o_i}}{\sum_je^{o_j}}$, \hspace{0.25cm} $o_i=\sum_jx_jw_{ij}$
 \\
 We use the chain rule to find $\frac{dC}{dw_{ij}}$:
 \\
-$\frac{dC}{dw_{ij}}=\frac{dC}{dp_i}\frac{dp_i}{do_i}\frac{do_i}{dw_{ij}}$
-\\
 $\frac{dp_i}{do_i}=\frac{e^{o_i}}{\sum_je^{o_i}}-\big( \frac{e^{o_i}}{\sum_je^{o_i}}\big)^2=p_i(1-p_i)$
 \\
 $\frac{do_i}{dw_{ij}}=x_j$
@@ -621,7 +619,7 @@ The figure below shows the output of the weights selected which could resemble t
 \begin{center}
 \begin{figure}[!ht]\centering
 \includegraphics{Mnist-Question9.jpg}
-\caption{Visualized weights of hidden units - positive on top, negative on the bottom.}
+\caption{Visualized weights of hidden units - positive on bottom, negative on the top.}
 \end{figure}
 \end{center}
 It appears that the images shown above can resemble faces, as outlined in the assignment specification.  The weights were selected using a trial and error approach, given our neural network's architecture (e.g. 20 hidden layers involved many runs of attempting to visual weights that could be useful for classifying input photos are particular actors).
