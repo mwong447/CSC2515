@@ -213,7 +213,7 @@
 
 \noindent \textit{Introductory information and readme instructions}
 
-This submissions containts the required files:  \textit{digits.py, faces.py, deepfaces.py, deepnn.tex  \& faces.pdf} in addition to two folders - both containing an previously downloaded pictures for each actor/actress. The downloading code can be found in the source files.  Comments about the code are located in each of the source files. Code was written in Python 3.5 with the Anaconda environment - the packages used are outlined at the beginning of the file.
+This submissions containts the required files:  \textit{digits.py, faces.py, deepfaces.py, deepnn.tex  \& faces.pdf} in addition to two folders - both containing an previously downloaded pictures for each actor/actress. The downloading code can be found in the source files.  Comments about the code are located in each of the source files. Code was written in Python 3.5 with the Anaconda environment - the packages used are outlined at the beginning of the file.  To load the training data for Parts 1-6, you must put the mnist\_all.mat file into the same directory as the .py files.
 
 
 
@@ -481,7 +481,7 @@ The optimization procedure for gradient descent involved testing: the type of di
 \par
 By trial and error, a learning rate of 0.00001 was selected. The learning rate was chosen to optimize convergence time - a low learning rate resulted in slow convergence time, and a high learning rate resulted in fluctuations and hindered convergence.  
 \par
-The log loss is plotted against the number of iterations ( at this stage different methods are being compared for the same number of training examples so it was not necessary to divide loss by number of examples). 
+The log loss is plotted against the number of iterations. 
 \par
 \begin{center}
 \begin{figure}[!ht]\centering
@@ -584,8 +584,7 @@ An example of momentum not being effective, would be as stated above, where the 
 %	PROBLEM 7
 %----------------------------------------------------------------------------------------
 \begin{homeworkProblem}
-START PANICKING ABOUT WHAT TO WRITE HERE
-
+For a network of $N$ layers and $K$ neurons, if we implement a fully vectorized backpropagation algorithm for gradient descent, the computational complexity is limited by only matrix multiplications and additions - and therefore, the number of neurons, $K$ becomes less relevant, and the complexity depends more so on the number of layers.  Matrix multiplication is approximately $O(n^2)$, and therefore, the complexity of fully vectorized backpropagation would be also $O(n^2)$ (which would make sense in this case - e.g. the weights' computational cost is linear).  Without caching the weights, each neuron, in each layer, would need to propagate the gradient to its connected neuron in the preceeding layer.  Without the ability to simply look up the weights associated at each neuron and furthermore, without the linearized computational cost in the weights, the computational time complexity would scale with both $K$ and $N$, and therefore, the computational time complexity would be approximately vary between $O(n^3$ and $O(n^4)$.  Indeed, this is the case with some other neural network optimization techniques (such as Newton's method).
 \end{homeworkProblem}
 \clearpage
 %----------------------------------------------------------------------------------------
@@ -692,7 +691,7 @@ The Cross-Entropy loss was selected as the cost function.  The optimizer used wa
 We attempted to test this behaviour by modifying our script only split the dataset into training and validatio - here, we observed a 100\% training accuracy and 98\% validation accuracy, potentially indicating that there may have been something wrong with the original split function.  A plot of the learning curve for this section (for the training set only, due to computational limitations) is shown below.
 \begin{center}
 \begin{figure}[!ht]\centering
-\includegraphics{Mnist-Question10.jpg}
+\includegraphics[scale=0.75]{Mnist-Question10.jpg}
 \caption{Learning Curve for the extracted AlexNet and the implemented neural network}
 \end{figure}
 \end{center}
