@@ -360,9 +360,11 @@ $\frac{dp_i}{do_i}=\frac{e^{o_i}}{\sum_je^{o_i}}-\big( \frac{e^{o_i}}{\sum_je^{o
 \\
 $\frac{do_i}{dw_{ij}}=x_j$
 \\
-$\frac{dC}{do_i}=\sum_j\frac{dC}{dp_j}\frac{dp_j}{do_i}$
-
-
+$\frac{dC}{do_i}=\sum_j\frac{dC}{dp_j}\frac{dp_j}{do_i}$ \hspace{0.2cm} $=p_i-y_i$
+\\
+$\frac{dC}{dw_{ij}}=\sum_i\frac{dC}{do_i}\frac{do_i}{dw_{ij}}$
+\\
+$=(p_i-y_i)x_j$
 
 \item The source code for computing the gradient is shown below.
 \begin{lstlisting}
@@ -477,7 +479,7 @@ Gradient matrix: [[  3.36017608e-03]
 
 For the Vanilla Gradient Descent algorithm, the weights and biases were sampled from the normal distribution around a mean of 0 and standard deviation of 0.2, using \textit{numpy.random.normal}. The weights and biases were initialized with shapes (784, 10) and (10, 1) respectively. 
 \par
-The optimization procedure for gradient descent involved testing: the type of distribution used in weight and bias initializiation, the learning rate, and the number of iterations. The reported results proved to be optimial.  The  network converges relatively quickly at 500 iterations - although itwas tested up to approximately 5000 iterations, however this had little accuracy on validation performance. The learning curve is shown below. 
+The optimization procedure for gradient descent involved testing: the type of distribution used in weight and bias initializiation, the learning rate, and the number of iterations. The reported results proved to be optimial.  The  network converges relatively quickly at 500 iterations - although it was tested up to approximately 5000 iterations, however this had little accuracy on validation performance. The learning curve is shown below. 
 \par
 By trial and error, a learning rate of 0.00001 was selected. The learning rate was chosen to optimize convergence time - a low learning rate resulted in slow convergence time, and a high learning rate resulted in fluctuations and hindered convergence.  
 \par
@@ -486,7 +488,7 @@ The log loss is plotted against the number of iterations.
 \begin{center}
 \begin{figure}[!ht]\centering
 \includegraphics[scale=0.75]{Mnist-Question4.jpg}
-\caption{Contour Plot of Cost Function demonstrating effective Momentum}
+\caption{Contour Plot of Cost Function }
 \end{figure}
 \end{center}
 \end{homeworkProblem}
@@ -615,14 +617,14 @@ The neural network architecture involved a fully connected layer (Linear), follo
 \begin{homeworkProblem}
 \noindent \textit{Visualizing weights of Actors}
 
-The figure below shows the output of the weights selected for two actors (Carell and Hader).  Note that the negative and positive weights are plotted separately. 
+The figure below shows the output of the weights selected which could resemble two actors (Carell and Hader).  Note that the negative and positive weights are plotted separately (i.e. negative weights are zeroed when positive are plotted and vice-versa).
 \begin{center}
 \begin{figure}[!ht]\centering
 \includegraphics{Mnist-Question9.jpg}
-\caption{Visualized weights for two actors - positive on the left, negative on the right.}
+\caption{Visualized weights of hidden units - positive on top, negative on the bottom.}
 \end{figure}
 \end{center}
-It appears that the images shown above can resemble faces, as outlined in the assignment specification.  The weights were selected using a trial and error approach, given our neural network's architecture (e.g. 20 hidden layers involved many runs of attempting to visual weights that had actual data).
+It appears that the images shown above can resemble faces, as outlined in the assignment specification.  The weights were selected using a trial and error approach, given our neural network's architecture (e.g. 20 hidden layers involved many runs of attempting to visual weights that could be useful for classifying input photos are particular actors).
 \end{homeworkProblem}
 \clearpage
 
@@ -686,9 +688,10 @@ Based on the code snippet above, the result after feeding a 3 $\times$ 227 $\tim
 \item A ReLU activation
 \item Output layer of 6 units (one for each actor/actress)
 \end{enumerate}
-The Cross-Entropy loss was selected as the cost function.  The optimizer used was the Adam optimizer.  We attempted modification of the optimizer, number of iterations and the number of hidden neurons in the hidden layer, but unfortunately, due to the high computational cost of running the entire training set through the AlexNet, limited trial runs were conducted.  Despite this however, we were able to obtain 100\% accuracy on both the training and validation sets and approximately 60\% accuracy on the test set (using a 80:20 split on the training set for training and validation, and 120 images in the test set).  Based on our test set, we observed that the training set was not proportional in the actors.  The script we wrote could download up to 130 images for each other; and while there were 130 images for some actors, there was less than 100 for others (e.g. Gilpin).  In retrospect, it would have been preferable to normalize the number of each actor in the training set, thereby potentially increasing performance on the test set (i.e. the training set distribution was not representative of the test set distribution).
+The Cross-Entropy loss was selected as the cost function.  The optimizer used was the Adam optimizer.  We attempted modification of the optimizer, number of iterations and the number of hidden neurons in the hidden layer, but unfortunately, due to the high computational cost of running the entire training set through the AlexNet, limited trial runs were conducted.  Despite this however, we were able to obtain 100\% accuracy on both the training and validation sets and approximately 60\% accuracy on the test set (using a 80:20 split on the training set for training and validation, and 120 images in the test set).  Based on our test set, we observed that the training set was not proportional in the actors.  The script we wrote could download up to 130 images for each other; and while there were 130 images for some actors, there was less than 100 for others (e.g. Gilpin). Our 'test' set which resulted in lower accuracy had exactly 20 images of each actor. In retrospect, it would have been preferable to normalize the number of each actor in the training set, thereby potentially increasing performance on the test set (i.e. the training set distribution was not representative of the test set distribution).
 \par
-We attempted to test this behaviour by modifying our script only split the dataset into training and validatio - here, we observed a 100\% training accuracy and 98\% validation accuracy, potentially indicating that there may have been something wrong with the original split function.  A plot of the learning curve for this section (for the training set only, due to computational limitations) is shown below.
+We attempted to test this behaviour by modifying our script to only split the dataset into training and validation (without controlling how many actors are represented in each set) - here, we observed a 100\% training accuracy and 98\% validation accuracy, potentially indicating a dependecy on how the data is split. A plot of the learning curve for this section (for the training set only, due to computational limitations) is shown below.  We observed that the testing accuracy closely followed the training accuracy plotted (which is demonstrated in the final accuracy score).
+\clearpage
 \begin{center}
 \begin{figure}[!ht]\centering
 \includegraphics[scale=0.75]{Mnist-Question10.jpg}
