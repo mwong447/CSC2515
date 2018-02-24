@@ -281,12 +281,14 @@ In parts 1 through , the MNIST dataset of handwritten digits will be used: \text
 
 \begin{homeworkProblem}
 \noindent \textit{Computation of the provided Network.}
-\\
 
 The network provided in Part 2 is shown below:
-
-  \includegraphics[scale=0.3]{Mnist-Question2.jpg}
-
+\begin{center}
+\begin{figure}[!ht]\centering
+\includegraphics[scale=0.2]{Mnist-Question2.jpg}
+\caption{Neural Network to Implement}
+\end{figure}
+\end{center}
 The source code to compute the assigned network is provided below.
 \begin{lstlisting}
 def compute(X, W, b):
@@ -294,7 +296,6 @@ def compute(X, W, b):
     hypothesis = hypothesis + b
     return hypothesis
 \end{lstlisting}
-
 The source code running a test case of the assigned network is provided below, followed by the output.  M is the MNIST dataset provided, W and b are randomly initialized numpy variables.
 \begin{lstlisting}
 def testPart2():
@@ -475,20 +476,19 @@ Gradient matrix: [[  3.36017608e-03]
 \noindent \textit{Gradient Descent Training}
 
 For the Vanilla Gradient Descent algorithm, the weights and biases were sampled from the normal distribution around a mean of 0 and standard deviation of 0.2, using \textit{numpy.random.normal}. The weights and biases were initialized with shapes (784, 10) and (10, 1) respectively. 
-\\
-
+\par
 The optimization procedure for gradient descent involved testing: the type of distribution used in weight and bias initializiation, the learning rate, and the number of iterations. The reported results proved to be optimial.  The  network converges relatively quickly at 500 iterations - although itwas tested up to approximately 5000 iterations, however this had little accuracy on validation performance. The learning curve is shown below. 
-
-
+\par
 By trial and error, a learning rate of 0.00001 was selected. The learning rate was chosen to optimize convergence time - a low learning rate resulted in slow convergence time, and a high learning rate resulted in fluctuations and hindered convergence.  
-\\
-
+\par
 The log loss is plotted against the number of iterations ( at this stage different methods are being compared for the same number of training examples so it was not necessary to divide loss by number of examples). 
-\\
-
-\includegraphics[scale=1]{Mnist-Question4.jpg}
-
-
+\par
+\begin{center}
+\begin{figure}[!ht]\centering
+\includegraphics[scale=0.75]{Mnist-Question4.jpg}
+\caption{Contour Plot of Cost Function demonstrating effective Momentum}
+\end{figure}
+\end{center}
 \end{homeworkProblem}
 \clearpage
 %----------------------------------------------------------------------------------------
@@ -498,22 +498,15 @@ The log loss is plotted against the number of iterations ( at this stage differe
 
 \begin{homeworkProblem}
 \noindent \textit{Gradient Descent With Momentum}
-\\
 
-Momentum is used in gradient descent to dampen oscillation and include an directional accumulation term to increase speed:
-\\
-The paramter update rule for momentum, as  provided in lecture notes is:
-\\
-
+Momentum is used in gradient descent to dampen oscillation and include an directional accumulation term to increase speed.  The parameter update rule for momentum, as  provided in lecture notes is:
+\begin{center}
 $\nu\leftarrow\gamma\nu+\alpha\frac{dC}{dW}$
-\\
 $W\leftarrow W-\nu$
-\\
+\end{center}
 
 Where $\gamma$ is the momentum term and $\alpha$ is the learning rate. C is the cost, and W is the parameter (weight) being updated. 
-The momentum rate was set to 0.5 based on some initial tests, however the number could be optimized further for better/faster performance. This momentum rate was sufficient to demonstrate its effect.
-\\
-The function for vectorized momentum is shown below.
+The momentum rate was set to 0.5 based on some initial tests, however the number could be optimized further for better/faster performance. This momentum rate was sufficient to demonstrate its effect.  The function for vectorized momentum is shown below.
 
 \begin{lstlisting}
 \# MOMENTUM GRADIENT DESCENT
@@ -552,9 +545,12 @@ def grad_descent_w(NLL, grad_NLL_W, grad_NLL_b, x, y, init_w, init_b, alpha, ite
 \end{lstlisting}
 
 The figure below shows the learning curve on train data for gradient descent with and without momentum. It can be observed that momentum increases convergence speed.
-
-\includegraphics[scale=1]{Mnist-Question5.jpg}
-
+\begin{center}
+\begin{figure}[!ht]\centering
+\includegraphics{Mnist-Question5.jpg}
+\caption{Comparison of Gradient Descent with and without Momentum}
+\end{figure}
+\end{center}
 
 \end{homeworkProblem}
 \clearpage
@@ -566,59 +562,29 @@ The figure below shows the learning curve on train data for gradient descent wit
 \begin{homeworkProblem}
 \noindent \textit{Contours of Gradient Descent}
 
-In this section, the effectiveness of gradient descent moving towards a minima will be demonstrated on contour plots. The weights chosen were at $init\_w[490,3]$ and  $init\_w[490,3]$. These weights were chosen because by checking the corresponding values on the digits, to ensure that they were not all 0s would not have an effect on the output. When the weights were allowed to vary around the vales obtained in Part 5, without gradient descent, they did not move towards the local minima. 
-\\
-The weights were moved $\pm$ 0.15 from their trained values. The learning rate was increased to 0.017, and 20 iterations were run.
-\\
-\includegraphics[scale=1]{Mnist-Question6.jpg}
-\\
+In this section, the effectiveness of gradient descent moving towards a minima will be demonstrated on contour plots. The weights chosen were at $init\_w[490,3]$ and  $init\_w[490,3]$. These weights were chosen because by checking the corresponding values on the digits, to ensure that they were not all 0s would not have an effect on the output. When the weights were allowed to vary around the vales obtained in Part 5, without gradient descent, they did not move towards the local minima.  The weights were moved $\pm$ 0.15 from their trained values. The learning rate was increased to 0.017, and 20 iterations were run.
+\begin{center}
+\begin{figure}[!ht]\centering
+\includegraphics[scale=0.75]{Mnist-Question6.jpg}
+\caption{Contour Plot of Cost Function demonstrating effective Momentum}
+\end{figure}
+\end{center}
 As shown in the figure momentum results in a faster path towards the minimum with fewer oscillations. The momentum term in the update introduces memory and allows the learning process to accelerate in consistent directions. 
-\\
 
 An example of momentum not being effective, would be as stated above, where the weights correspond to pixels of 0 or close to 0. In the example below, the weights chosen were changed to at $init\_w[10,3]$ and $init\_w[11,3]$, which may have been closer to the sides. It can be seen from the contours that they are more linear and  less effected by the weights. Momentum could be less effective, or very similar to vanilla gradient descent, when there is already a 'smooth' path towards the minima.
-
-\includegraphics[scale=1]{Mnist-Question6e.jpg}
-
+\begin{center}
+\begin{figure}[!ht]\centering
+\includegraphics[scale=0.75]{Mnist-Question6e.jpg}
+\caption{Contour Plot of Ineffective momentum}
+\end{figure}
+\end{center}
 \end{homeworkProblem}
 \clearpage
 %----------------------------------------------------------------------------------------
 %	PROBLEM 7
 %----------------------------------------------------------------------------------------
 \begin{homeworkProblem}
-
-Running the linear regression classifier results in a training accuracy of $89\%$ and a validation accuracy of $56\%$.  Both the $\alpha$ and number of iterations were modified, to varying degrees of success - however, it is worth noting that the validation accuracy is significantly lower than the training accuracy which may be a symptom of overfitting.
-\par Two loops were written in order to obtain the training hypothesis and validation hypothesis labels.  The steps are written below.
-\begin{enumerate}
-\item A matrix of 0's was initialized to the same shape as that of the label matrix
-\item Each column in the label matrix was scanned for it's maximum value and the index of that value was stored in a new variable, \textit{max}
-\item Starting at the $0^{th}$ column, a 1 was stored into the 0's matrix for each index in \textit{max}, and iterated through until the last column was reached.
-\item The resultant matrix now had only one value of 1 in each column and was compared to the label matrix.
-\end{enumerate}
-An example of this for the training data is shown below.
-\begin{lstlisting}
-    #Training hypothesis
-    ones_t = np.ones((1,training.shape[1]))
-    training_with_bias = vstack((ones_t,training))
-    training_hypothesis = np.matmul(theta.T,training_with_bias)
-    max = training_hypothesis.argmax(axis=0)
-    max = np.array(max)
-    training_hypothesis_labels = np.zeros((training_hypothesis.shape))
-    print(training_hypothesis_labels.shape)
-    i = 0
-    while i < training_hypothesis_labels.shape[1]:
-        index = max[i]
-        training_hypothesis_labels[index,i]=1
-        i+=1
-
-    correct = 0
-    i = 0
-    while i < training_hypothesis_labels.shape[1]:
-        if np.array_equal(training_hypothesis_labels[:,i],training_labels[:,i]) is True:
-            correct += 1
-        i+=1
-    print("Training accuracy is: " + str(correct/600.0))
-
-\end{lstlisting}
+START PANICKING ABOUT WHAT TO WRITE HERE
 
 \end{homeworkProblem}
 \clearpage
@@ -639,33 +605,91 @@ The neural network architecture involved a fully connected layer (Linear), follo
 \includegraphics{Mnist-Question8.jpg}
 \caption{Training \& Validation performance for Part 8}
 \end{figure}
-
 \end{center}
 
 \end{homeworkProblem}
 \clearpage
 
 %----------------------------------------------------------------------------------------
-%	PROBLEM 8
+%	PROBLEM 9
 %----------------------------------------------------------------------------------------
 \begin{homeworkProblem}
-\noindent \textit{Visualizing $\theta 's$ with multiple label matrix}
+\noindent \textit{Visualizing weights of Actors}
 
-The 6 figures below show the visualized $\theta 's$ for training on the full set of actors in $act$ with the label matrix, as outlined in the assignment specification.
-
-A potential explanation for the lack of "face-like" appearance in $\theta 's $ obtained after training may be that the size of the training set is too large for each actor.  As observed in part 4, with only two actors from the Baldwin and Carell sets, the $\theta 's$ visualized more resembled faces.
+The figure below shows the output of the weights selected for two actors (Carell and Hader).  Note that the negative and positive weights are plotted separately. 
+\begin{center}
+\begin{figure}[!ht]\centering
+\includegraphics{Mnist-Question9.jpg}
+\caption{Visualized weights for two actors - positive on the left, negative on the right.}
+\end{figure}
+\end{center}
+It appears that the images shown above can resemble faces, as outlined in the assignment specification.  The weights were selected using a trial and error approach, given our neural network's architecture (e.g. 20 hidden layers involved many runs of attempting to visual weights that had actual data).
 \end{homeworkProblem}
 \clearpage
 
 %----------------------------------------------------------------------------------------
-%	PROBLEM 8
+%	PROBLEM 10
 %----------------------------------------------------------------------------------------
 \begin{homeworkProblem}
-\noindent \textit{Visualizing $\theta 's$ with multiple label matrix}
+\noindent \textit{Using a Pre-trained AlexNet CNN}
 
-The 6 figures below show the visualized $\theta 's$ for training on the full set of actors in $act$ with the label matrix, as outlined in the assignment specification.
+The weights from the Pre-trained AlexNet Convolution Neural Network were obtained by modifying the source code provided on the CSC2515 website, and the code is shown below.
+\begin{lstlisting}
+class AnotherAlexNet(nn.Module):
+    def load_weights(self):
+        an_builtin = torchvision.models.alexnet(pretrained=True)
 
-A potential explanation for the lack of "face-like" appearance in $\theta 's $ obtained after training may be that the size of the training set is too large for each actor.  As observed in part 4, with only two actors from the Baldwin and Carell sets, the $\theta 's$ visualized more resembled faces.
+        features_weight_i = [0, 3, 6, 8, 10]
+        for i in features_weight_i:
+            self.features[i].weight = an_builtin.features[i].weight
+            self.features[i].bias = an_builtin.features[i].bias
+
+        classifier_weight_i = [1, 4]
+        for i in classifier_weight_i:
+            self.classifier[i].weight = an_builtin.classifier[i].weight
+            self.classifier[i].bias = an_builtin.classifier[i].bias
+
+    def __init__(self, num_classes=1000):
+        super(AnotherAlexNet, self).__init__()
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 64, kernel_size=11, stride=4, padding=2),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+            nn.Conv2d(64, 192, kernel_size=5, padding=2),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+            nn.Conv2d(192, 384, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(384, 256, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(256, 256, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+        )
+        self.classifier = nn.Sequential(
+            nn.Dropout(),
+            nn.Linear(256 * 6 * 6, 4096),
+            nn.ReLU(inplace=True),
+            nn.Dropout(),
+            nn.Linear(4096, 4096),
+            nn.ReLU(inplace=True),
+        )
+
+        self.load_weights()
+
+    def forward(self, x):
+        x = self.features(x)
+        return x
+\end{lstlisting}
+
+Based on the code snippet above, the result after feeding a 3 $\times$ 227 $\times$ 227 image into the convolution neural network was a $k$ $\times$ 256 $\times$ 13 $\times$ 13 Pytorch Tensor, where $k$ was the number of training examples.  The neural network architecture we implemented was similar to the one of Part 8:
+\begin{enumerate}
+\item A Linear layer with shape $449 \times 43264$
+\item A ReLU activation
+\item Output layer of 6 units (one for each actor/actress)
+\end{enumerate}
+The Cross-Entropy loss was selected as the cost function.  The optimizer used was the Adam optimizer.  We attempted modification of the optimizer, number of iterations and the number of hidden neurons in the hidden layer, but unfortunately, due to the high computational cost of running the entire training set through the AlexNet, limited trial runs were conducted.  Despite this however, we were able to obtain 100\% accuracy on both the training and validation sets and approximately 60\% accuracy on the test set (using a 80:20 split on the training set for training and validation, and 120 images in the test set).  Based on our test set, we observed that the training set was not proportional in the actors.  The script we wrote could download up to 130 images for each other; and while there were 130 images for some actors, there was less than 100 for others (e.g. Gilpin).  In retrospect, it would have been preferable to normalize the number of each actor in the training set, thereby potentially increasing performance on the test set (i.e. the training set distribution was not representative of the test set distribution).
+\par
+We attempted to test this behaviour by modifying our script only split the dataset into training and validatio - here, we observed a 100\% training accuracy and 98\% validation accuracy, potentially indicating that there may have been something wrong with the original split function.
 \end{homeworkProblem}
 \clearpage
 \end{document}
